@@ -137,7 +137,7 @@ non terminal			procedimiento;
 non terminal			funcion;
 non terminal			selectorpof;
 
-non terminal            	parametrofuncionoproc;
+non terminal            parametrofuncionoproc;
 non terminal 			llamadafuncion ; 
 
 non terminal 			parteizquierdaasignacion;  
@@ -171,7 +171,7 @@ non terminal			sentenciallamadafuncion;
 precedence left		PIZQUIERDO, PDERECHO, YLOGICA, MENORQUE, IGUALDAD, CIZQUIERDO, CDERECHO, SUMA, PRODUCTO;	
 precedence right	NOLOGICO;
 
-// Declaraci贸n de reglas de producci贸n
+// Declaraci髇 de reglas de producci髇
 
 start with program;
 
@@ -198,18 +198,18 @@ axiom ::= defprincipal;
 
 epsilon ::=;
 
-//Definici贸n de constantes
+//Definici髇 de constantes
 defconstantes ::=   IDEN ASIGNACION valorconstante DSENTENCIAS defconstantes | epsilon; 
 valorconstante ::=   FALSO | CIERTO | NUM ;
 seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
 
- //Definici贸n de tipos
+// Definici髇 de tipos
 deftipos ::=IDEN ASIGNACION DECLVECTOR CIZQUIERDO valorango RANGO valorango CDERECHO ASIGNACIONVECTOR tipovector  DSENTENCIAS deftipos | epsilon;
 tipovector ::=BOOLEANO | ENTERO ;
 valorango ::= NUM | IDEN | miembrovector;
 secciontipos ::= COMIENZODECLTIPOS deftipos | epsilon; 
 
-// Definici贸n de variables
+// Definici髇 de variables
 tipovariable ::= BOOLEANO | ENTERO | IDEN ;
 selectorvalororeferencia ::=  PARAMETROVALOR IDEN |expresion ;
 defvariables ::= listavariables DELIMFUNC tipovariable puntoycomaopcional defvariables | epsilon; 
@@ -217,7 +217,7 @@ listavariables ::= selectorvalororeferencia DIDENTIFICADORES listavariables | se
 seccionvariables ::= DECLVARIABLES defvariables | epsilon  ;
 puntoycomaopcional ::= DSENTENCIAS | epsilon;
 
-//reglas de subprogramas
+// Reglas de subprogramas
 tiporetornofuncion ::= IDEN | tipovector ;
 procedimiento ::= COMIENZOPROCEDIMIENTO IDEN PIZQUIERDO defvariables PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias   FINBLOQUESENTENCIAS DSENTENCIAS ;
 funcion ::= DECLAREFUNCION IDEN PIZQUIERDO defvariables PDERECHO DELIMFUNC tiporetornofuncion DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion listaSentenciasFuncion FINBLOQUESENTENCIAS DSENTENCIAS  ;
@@ -225,25 +225,25 @@ selectorpof ::= procedimiento | funcion ;
 defsubprograma ::=selectorpof  defsubprograma | epsilon ;
 seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
 
-// Definici贸n de programa principal
+// Definici髇 de programa principal
 defprincipal ::= COMIENZOPROGRAMA IDEN DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA ;
 
+// Expresiones
 expresion ::=  expresion MENORQUE  expresion |  expresion IGUALDAD  expresion | IDEN | llamadafuncion | CIERTO | FALSO | miembrovector | NUM | expresionlvl2;
 expresionlvl2 ::=  expresion SUMA expresion | expresionlvl3 ;
 expresionlvl3 ::=  expresion YLOGICA expresion |  expresion PRODUCTO expresion | expresionlvl4;
 expresionlvl4 ::= NOLOGICO  expresion | expresionlvl5 ;
 expresionlvl5 ::= PIZQUIERDO expresion PDERECHO | CIZQUIERDO expresion CDERECHO  ;
 
-
 // Acceso a vectores
 miembrovector::= IDEN CIZQUIERDO valorango CDERECHO;
  
-// sentencias de asignacion
+// Sentencias de asignacion
 parteizquierdaasignacion ::= IDEN |miembrovector  ;
 sentenciadeasignacion ::= parteizquierdaasignacion ASIGNACION parametroasignacion DSENTENCIAS; 
 parametroasignacion ::= expresion ;
 
-// llamada a funci贸n
+// Llamada a funci髇
 parametrofuncionoproc ::=     listavariables ;
 llamadafuncion ::= IDEN PIZQUIERDO parametrofuncionoproc PDERECHO;  
 sentenciallamadafuncion ::= llamadafuncion DSENTENCIAS;
@@ -266,11 +266,11 @@ sentenciafor ::= COMIENZOBUCLEPARA IDEN RANGOBUCLEPARA expresion RANGO expresion
 sentenciaforFuncion ::= COMIENZOBUCLEPARA IDEN RANGOBUCLEPARA expresion RANGO expresion DELIMFUNC listaSentenciasFuncion FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS;
 
 
-// escribir. 
+// Escribir 
 parametroEscribir ::= STRING | expresion | epsilon ;
 sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir PDERECHO DSENTENCIAS;
 
-// devolver
+// Devolver
 sentenciaDevolver ::= FRETURN expresion DSENTENCIAS;
 
 
