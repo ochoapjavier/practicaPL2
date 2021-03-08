@@ -171,7 +171,7 @@ non terminal			sentenciallamadafuncion;
 precedence left		PIZQUIERDO, PDERECHO, YLOGICA, MENORQUE, IGUALDAD, CIZQUIERDO, CDERECHO, SUMA, PRODUCTO;	
 precedence right	NOLOGICO;
 
-// Declaración de reglas de producción
+// Declaraciï¿½n de reglas de producciï¿½n
 
 start with program;
 
@@ -198,18 +198,18 @@ axiom ::= defprincipal;
 
 epsilon ::=;
 
-//Definición de constantes
+//Definiciï¿½n de constantes
 defconstantes ::=   IDEN ASIGNACION valorconstante DSENTENCIAS defconstantes | epsilon; 
 valorconstante ::=   FALSO | CIERTO | NUM ;
 seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
 
-// Definición de tipos
+// Definiciï¿½n de tipos
 deftipos ::=IDEN ASIGNACION DECLVECTOR CIZQUIERDO valorango RANGO valorango CDERECHO ASIGNACIONVECTOR tipovector  DSENTENCIAS deftipos | epsilon;
 tipovector ::=BOOLEANO | ENTERO ;
 valorango ::= NUM | IDEN | miembrovector;
 secciontipos ::= COMIENZODECLTIPOS deftipos | epsilon; 
 
-// Definición de variables
+// Definiciï¿½n de variables
 tipovariable ::= BOOLEANO | ENTERO | IDEN ;
 selectorvalororeferencia ::=  PARAMETROVALOR IDEN |expresion ;
 defvariables ::= listavariables DELIMFUNC tipovariable puntoycomaopcional defvariables | epsilon; 
@@ -225,7 +225,7 @@ selectorpof ::= procedimiento | funcion ;
 defsubprograma ::=selectorpof  defsubprograma | epsilon ;
 seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
 
-// Definición de programa principal
+// Definiciï¿½n de programa principal
 defprincipal ::= COMIENZOPROGRAMA IDEN DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA ;
 
 // Expresiones
@@ -243,7 +243,7 @@ parteizquierdaasignacion ::= IDEN |miembrovector  ;
 sentenciadeasignacion ::= parteizquierdaasignacion ASIGNACION parametroasignacion DSENTENCIAS; 
 parametroasignacion ::= expresion ;
 
-// Llamada a función
+// Llamada a funciï¿½n
 parametrofuncionoproc ::=     listavariables ;
 llamadafuncion ::= IDEN PIZQUIERDO parametrofuncionoproc PDERECHO;  
 sentenciallamadafuncion ::= llamadafuncion DSENTENCIAS;
