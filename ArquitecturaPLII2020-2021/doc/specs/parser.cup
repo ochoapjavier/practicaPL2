@@ -22,7 +22,7 @@ import compiler.semantic.type.*;
 import compiler.intermediate.*;
 import compiler.code.*;
 
-// DeclaraciÃ³n del cÃ³digo de usuario
+// Declaración del código de usuario
 
 action code {:
 	
@@ -181,7 +181,7 @@ program ::=
    :}
   axiom:ax
   {: 
-  		// No modificar esta estructura, aunque se pueden aÃ±adir mÃ¡s acciones semÃ¡nticas
+  		// No modificar esta estructura, aunque se pueden añadir más acciones semánticas
   		
   		//List intermediateCode = ax.getIntermediateCode ();
   		//finalCodeFactory.create (intermediateCode);
@@ -198,7 +198,7 @@ axiom ::= defprincipal;
 
 epsilon ::=;
 
-//Definiciï¿½n de constantes
+//Definición de constantes
 defconstantes ::=   IDEN ASIGNACION valorconstante DSENTENCIAS defconstantes | epsilon; 
 valorconstante ::=   FALSO | CIERTO | NUM ;
 seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
@@ -225,8 +225,29 @@ selectorpof ::= procedimiento | funcion ;
 defsubprograma ::=selectorpof  defsubprograma | epsilon ;
 seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
 
-// Definiciï¿½n de programa principal
-defprincipal ::= COMIENZOPROGRAMA IDEN DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA ;
+// Definición de programa principal
+defprincipal ::= COMIENZOPROGRAMA IDEN:id
+{:
+	//Creamos el ámbito global con el nombre del programa principal
+	String nombre = id.getLexema();
+	scopeManager.openScope(nombre);
+	ScopeIF scope = scopeManager.getCurrentScope();
+	
+	//Para comprobar el nombre del ámbito...
+	System.out.println("El nombre del nuevo ámbito es :" + scope.getName());
+	
+	//Para comprobar el nivel del ámbito...
+	System.out.println("El nivel del nuevo ámbito es :" + scope.getLevel());
+	
+	//Obtenemos del ámbito creado la Tabla de Tipos
+	TypeTableIF typeTable = scope.getTypeTable();
+	
+	//Introducción del Tipo Simple Entero o Integer y Lógico o Booleano
+	TypeSimple tsEntero = new TypeSimple(scope, "ENTERO");
+	typeTable.addType("ENTERO", tsEntero);
+	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
+	typeTable.addType("LOGICO", tsLogico);
+:} DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA;
 
 // Expresiones
 expresion ::=  expresion MENORQUE  expresion |  expresion IGUALDAD  expresion | IDEN | llamadafuncion | CIERTO | FALSO | miembrovector | NUM | expresionlvl2;

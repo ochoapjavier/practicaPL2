@@ -21,9 +21,9 @@ public class TypeSimple
      * Constructor for TypeSimple.
      * @param scope The declaration scope.
      */
-    public TypeSimple (ScopeIF scope)
+    public TypeSimple (ScopeIF scope, String name)
     {
-        super (scope);
+        super (scope, name);
     }
     
     /**
