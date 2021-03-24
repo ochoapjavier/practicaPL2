@@ -226,7 +226,7 @@ defsubprograma ::=selectorpof  defsubprograma | epsilon ;
 seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
 
 // Definición de programa principal
-defprincipal ::= COMIENZOPROGRAMA IDEN:id
+defprincipal ::= COMIENZOPROGRAMA IDEN:id DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA
 {:
 	//Creamos el ámbito global con el nombre del programa principal
 	String nombre = id.getLexema();
@@ -247,7 +247,7 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	typeTable.addType("ENTERO", tsEntero);
 	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
 	typeTable.addType("LOGICO", tsLogico);
-:} DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA;
+:};
 
 // Expresiones
 expresion ::=  expresion MENORQUE  expresion |  expresion IGUALDAD  expresion | IDEN | llamadafuncion | CIERTO | FALSO | miembrovector | NUM | expresionlvl2;
