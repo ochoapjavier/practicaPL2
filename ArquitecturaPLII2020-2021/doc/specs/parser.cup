@@ -104,7 +104,7 @@ non terminal  			program;
 non terminal Axiom		axiom;
 non terminal  			epsilon;
 non terminal  			defconstantes;
-non terminal  			valorconstante;
+non terminal ValorConstante	valorconstante;
 non terminal  			seccionconstantes;
 non terminal  			deftipos;
 non terminal  			tipovector;
@@ -162,6 +162,7 @@ non terminal 			sentenciaDevolver;
 non terminal			parametroasignacion;
 
 non terminal			sentenciallamadafuncion;
+ 
 
 
 
@@ -199,8 +200,52 @@ axiom ::= defprincipal;
 epsilon ::=;
 
 //Definición de constantes
-defconstantes ::=   IDEN ASIGNACION valorconstante DSENTENCIAS defconstantes | epsilon; 
-valorconstante ::=   FALSO | CIERTO | NUM ;
+defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS defconstantes 
+{:
+
+//Recuperamos el ámbito donde estamos y obtenemos la tabla de símbolos.
+ScopeIF scope = scopeManager.getCurrentScope();
+SymbolTableIF tablaSimbolos = scope.getSymbolTable();
+
+//Comprobamos que la constante no esté contenida ya en la tabla de símbolos.
+String nombreConstante = id.getLexema();
+
+if(tablaSimbolos.containsSymbol(nombreConstante)){
+	semanticErrorManager.semanticFatalError("Constante " + nombreConstante + " en línea " + id.getLine() + " ya declarada");
+} else {
+	System.out.println("Constante " + nombreConstante + " en linea " + id.getLine() + " aún no declarada");	
+	System.out.println(valor.getTipo());
+	
+	
+	//Se introduce en la tabla de símbolos la constante con su ámbito, nombre, tipo y valor
+	TypeTableIF tablaTipos = scope.getTypeTable();
+	TypeIF tipo = scopeManager.searchType(valor.getTipo());
+	SymbolConstant simboloConstante = new SymbolConstant(scope, nombreConstante, tipo);
+	tablaSimbolos.addSymbol(simboloConstante);
+}
+
+:} | epsilon; 
+
+valorconstante ::=   FALSO 
+{:
+	ValorConstante vc = new ValorConstante();
+	vc.setTipo("LOGICO");
+	RESULT = vc;							
+:} | CIERTO 
+{:
+	ValorConstante vc = new ValorConstante();
+	vc.setTipo("LOGICO");
+	RESULT = vc;							
+:}
+| NUM
+{:
+	ValorConstante vc = new ValorConstante();
+	vc.setTipo("ENTERO");
+	RESULT = vc;							
+:};
+
+
+
 seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
 
 // Definiciï¿½n de tipos
