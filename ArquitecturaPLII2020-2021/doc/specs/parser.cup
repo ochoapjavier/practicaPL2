@@ -198,6 +198,30 @@ axiom ::= defprincipal;
 
 epsilon ::=;
 
+// Definición de programa principal
+defprincipal ::= COMIENZOPROGRAMA IDEN:id
+{:
+	//Creamos el ámbito global con el nombre del programa principal
+	String nombre = id.getLexema();
+	scopeManager.openScope(nombre);
+	ScopeIF scope = scopeManager.getCurrentScope();
+	
+	//Para comprobar el nombre del ámbito...
+	System.out.println("El nombre del nuevo ámbito es :" + scope.getName());
+	
+	//Para comprobar el nivel del ámbito...
+	System.out.println("El nivel del nuevo ámbito es :" + scope.getLevel());
+	
+	//Obtenemos del ámbito creado la Tabla de Tipos
+	TypeTableIF typeTable = scope.getTypeTable();
+	
+	//Introducción del Tipo Simple Entero o Integer y Lógico o Booleano
+	TypeSimple tsEntero = new TypeSimple(scope, "ENTERO");
+	typeTable.addType("ENTERO", tsEntero);
+	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
+	typeTable.addType("LOGICO", tsLogico);
+:} DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA;
+
 //Definición de constantes
 defconstantes ::=   IDEN ASIGNACION valorconstante DSENTENCIAS defconstantes | epsilon; 
 valorconstante ::=   FALSO | CIERTO | NUM ;
@@ -219,35 +243,103 @@ puntoycomaopcional ::= DSENTENCIAS | epsilon;
 
 // Reglas de subprogramas
 tiporetornofuncion ::= IDEN | tipovector ;
-procedimiento ::= COMIENZOPROCEDIMIENTO IDEN PIZQUIERDO defvariables PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias   FINBLOQUESENTENCIAS DSENTENCIAS ;
-funcion ::= DECLAREFUNCION IDEN PIZQUIERDO defvariables PDERECHO DELIMFUNC tiporetornofuncion DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion listaSentenciasFuncion FINBLOQUESENTENCIAS DSENTENCIAS  ;
+procedimiento ::= COMIENZOPROCEDIMIENTO IDEN:id PIZQUIERDO defvariables PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias FINBLOQUESENTENCIAS DSENTENCIAS
+{:
+	ScopeIF scope = scopeManager.getCurrentScope();
+	SymbolTableIF symbolTable = scope.getSymbolTable();
+	TypeTableIF typeTable = scope.getTypeTable();
+	
+	if (typeTable.containsType(id.getLexema()) || symbolTable.containsSymbol(id.getLexema())) {
+		 
+		System.out.println("\nEstoy en IF\n");
+		
+		semanticErrorManager.semanticFatalError("Error al declarar la funcion "+id.getLexema()+", ya ha sido declarada");
+		
+    } else {
+    	System.out.println("\nEstoy en ELSE\n");
+    	
+    	// Insertar tabla tipos y tabla simbolos para la función		
+		ScopeIF scopeP = scopeManager.getCurrentScope();
+		SymbolTableIF symbolTableP = scopeP.getSymbolTable();
+		TypeTableIF typeTableP = scopeP.getTypeTable();
+		
+		// Crear Tipo y Simbolo de la Función
+		TypeProcedure tipoProcedure = new TypeProcedure(scope, id.getLexema());		
+		typeTableP.addType(id.getLexema(), tipoProcedure);
+		SymbolProcedure simboloProcedimiento = new SymbolProcedure(scope, id.getLexema(), typeTableP.getType(id.getLexema()));
+        
+        symbolTableP.addSymbol(id.getLexema(),simboloProcedimiento);
+		syntaxErrorManager.syntaxInfo("Procedimiento en las tablas: "+id.getLexema());
+		
+		//Crear ambito para la función
+		ScopeIF scopeF = scopeManager.openScope (id.getLexema());
+		SymbolTableIF symbolTableF = scopeF.getSymbolTable();
+		TypeTableIF typeTableF = scopeF.getTypeTable();
+	
+				
+	
+		//Para comprobar el nombre del ámbito...
+		System.out.println("El nombre del nuevo ámbito es :" + scopeF.getName());
+		
+		//Para comprobar el nivel del ámbito...
+		System.out.println("El nivel del nuevo ámbito es :" + scopeF.getLevel());
+				
+		System.out.println("Cerrando el ámbito :" + scopeP.getName());
+		scopeManager.closeScope();	
+    }
+	
+	
+:};
+
+funcion ::= DECLAREFUNCION IDEN:id PIZQUIERDO defvariables PDERECHO DELIMFUNC tiporetornofuncion DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion listaSentenciasFuncion FINBLOQUESENTENCIAS DSENTENCIAS
+{:
+	ScopeIF scope = scopeManager.getCurrentScope();
+	SymbolTableIF symbolTable = scope.getSymbolTable();
+	TypeTableIF typeTable = scope.getTypeTable();
+	
+	if (typeTable.containsType(id.getLexema()) || symbolTable.containsSymbol(id.getLexema())) {
+		 
+		System.out.println("\nEstoy en IF\n");
+		
+		semanticErrorManager.semanticFatalError("Error al declarar la funcion "+id.getLexema()+", ya ha sido declarada");
+		
+    } else {
+    	System.out.println("\nEstoy en ELSE\n");
+    	
+    	// Insertar tabla tipos y tabla simbolos para la función		
+		ScopeIF scopeP = scopeManager.getCurrentScope();
+		SymbolTableIF symbolTableP = scopeP.getSymbolTable();
+		TypeTableIF typeTableP = scopeP.getTypeTable();
+		
+		// Crear Tipo y Simbolo de la Función
+		TypeFunction tipoFuncion = new TypeFunction(scope, id.getLexema());		
+		typeTableP.addType(id.getLexema(), tipoFuncion);
+		SymbolFunction simboloFuncion = new SymbolFunction(scope, id.getLexema(), typeTableP.getType(id.getLexema()));
+        
+        symbolTableP.addSymbol(id.getLexema(),simboloFuncion);
+		syntaxErrorManager.syntaxInfo("Funcion en las tablas: "+id.getLexema());
+		
+		//Crear ambito para la función
+		ScopeIF scopeF = scopeManager.openScope (id.getLexema());
+		SymbolTableIF symbolTableF = scopeF.getSymbolTable();
+		TypeTableIF typeTableF = scopeF.getTypeTable();
+	
+				
+	
+		//Para comprobar el nombre del ámbito...
+		System.out.println("El nombre del nuevo ámbito es :" + scopeF.getName());
+		
+		//Para comprobar el nivel del ámbito...
+		System.out.println("El nivel del nuevo ámbito es :" + scopeF.getLevel());
+				
+		System.out.println("Cerrando el ámbito :" + scopeP.getName());
+		scopeManager.closeScope();	
+    }
+:};
+
 selectorpof ::= procedimiento | funcion ;
 defsubprograma ::=selectorpof  defsubprograma | epsilon ;
 seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
-
-// Definición de programa principal
-defprincipal ::= COMIENZOPROGRAMA IDEN:id DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA
-{:
-	//Creamos el ámbito global con el nombre del programa principal
-	String nombre = id.getLexema();
-	scopeManager.openScope(nombre);
-	ScopeIF scope = scopeManager.getCurrentScope();
-	
-	//Para comprobar el nombre del ámbito...
-	System.out.println("El nombre del nuevo ámbito es :" + scope.getName());
-	
-	//Para comprobar el nivel del ámbito...
-	System.out.println("El nivel del nuevo ámbito es :" + scope.getLevel());
-	
-	//Obtenemos del ámbito creado la Tabla de Tipos
-	TypeTableIF typeTable = scope.getTypeTable();
-	
-	//Introducción del Tipo Simple Entero o Integer y Lógico o Booleano
-	TypeSimple tsEntero = new TypeSimple(scope, "ENTERO");
-	typeTable.addType("ENTERO", tsEntero);
-	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
-	typeTable.addType("LOGICO", tsLogico);
-:};
 
 // Expresiones
 expresion ::=  expresion MENORQUE  expresion |  expresion IGUALDAD  expresion | IDEN | llamadafuncion | CIERTO | FALSO | miembrovector | NUM | expresionlvl2;

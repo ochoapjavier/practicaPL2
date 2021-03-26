@@ -1,9 +1,24 @@
 programa uno:
-constantes
-	TAMANO = 10;
-	MESES = 12;
-	ANYO = 2007;
-	ABIERTO = cierto;
+
+subprogramas
+
+procedimiento ejFuncion (a : entero):
+	variables b,c: entero;
+	comienzo
+		c = a + 2;
+		b = a + c;
+	fin;
+	
+
+
+funcion ejFuncion (a,b : entero): entero:
+variables suma: entero;
+comienzo
+suma = a + b;
+devolver suma;
+fin;
+
+
 
 comienzo
 
