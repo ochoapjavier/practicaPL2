@@ -1,5 +1,9 @@
 programa uno:
 
+constantes
+		a = falso;
+		b = cierto;
+		
 subprogramas
 
 procedimiento ejFuncion (a : entero):
@@ -11,12 +15,6 @@ procedimiento ejFuncion (a : entero):
 	
 
 
-funcion ejFuncion (a,b : entero): entero:
-variables suma: entero;
-comienzo
-suma = a + b;
-devolver suma;
-fin;
 
 
 

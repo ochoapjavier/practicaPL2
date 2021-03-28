@@ -1,6 +1,6 @@
 package compiler.syntax;
 
-// DeclaraciÃ³n de importaciones 
+// Declaración de importaciones 
 //(No modificar las proporcionadas. Se pueden agregar mas)
 
 import java_cup.runtime.Symbol;
@@ -49,7 +49,7 @@ parser code {:
 	}
 :}
 
-// DeclaraciÃ³n de terminales
+// Declaración de terminales
 
 terminal Token RANGO;
 terminal Token ASIGNACIONVECTOR;
@@ -97,14 +97,14 @@ terminal Token ASIGNACION;
 
 
 
-// DeclaraciÃ³n de no terminales
+// Declaración de no terminales
 
 
 non terminal  			program;
 non terminal Axiom		axiom;
 non terminal  			epsilon;
 non terminal  			defconstantes;
-non terminal  			valorconstante;
+non terminal Constante 	valorconstante;
 non terminal  			seccionconstantes;
 non terminal  			deftipos;
 non terminal  			tipovector;
@@ -167,11 +167,11 @@ non terminal			sentenciallamadafuncion;
 
 
 
-// DeclaraciÃ³n de relaciones de precedencia
+// Declaración de relaciones de precedencia
 precedence left		PIZQUIERDO, PDERECHO, YLOGICA, MENORQUE, IGUALDAD, CIZQUIERDO, CDERECHO, SUMA, PRODUCTO;	
 precedence right	NOLOGICO;
 
-// Declaraciï¿½n de reglas de producciï¿½n
+// Declaración de reglas de producción
 
 start with program;
 
@@ -181,7 +181,7 @@ program ::=
    :}
   axiom:ax
   {: 
-  		// No modificar esta estructura, aunque se pueden añadir más acciones semánticas
+  		// No modificar esta estructura, aunque se pueden aï¿½adir mï¿½s acciones semï¿½nticas
   		
   		//List intermediateCode = ax.getIntermediateCode ();
   		//finalCodeFactory.create (intermediateCode);
@@ -215,7 +215,7 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	//Obtenemos del ámbito creado la Tabla de Tipos
 	TypeTableIF typeTable = scope.getTypeTable();
 	
-	//Introducción del Tipo Simple Entero o Integer y Lógico o Booleano
+	//Introducciï¿½n del Tipo Simple Entero o Integer y Lï¿½gico o Booleano
 	TypeSimple tsEntero = new TypeSimple(scope, "ENTERO");
 	typeTable.addType("ENTERO", tsEntero);
 	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
@@ -223,11 +223,48 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 :} DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA;
 
 //Definición de constantes
-defconstantes ::=   IDEN ASIGNACION valorconstante DSENTENCIAS defconstantes | epsilon; 
-valorconstante ::=   FALSO | CIERTO | NUM ;
+defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS defconstantes 
+{:
+	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de sï¿½mbolos
+	ScopeIF scope = scopeManager.getCurrentScope();
+	SymbolTableIF tablaSimbolos = scope.getSymbolTable();
+	
+	//Comprobamos que la constante no este ya contenida en la tabla de sï¿½mbolos
+	if(tablaSimbolos.containsSymbol(id.getLexema())){
+		semanticErrorManager.semanticFatalError("Constante " +id.getLexema() + " en linea " + id.getLine() + " ya declarada");
+	} else {
+		System.out.println("Constante " +id.getLexema() + " en linea " + id.getLine() + " aún No declarada");	
+		
+		//Introducimos en la tabla de símbolos la constante con su ámbito, nombre, tipo y valor
+		TypeTableIF tablaTipos = scope.getTypeTable();
+		TypeIF tipo = scopeManager.searchType(valor.getTipo());
+		SymbolConstant simboloConstante = new SymbolConstant(scope, id.getLexema(), tipo);
+		tablaSimbolos.addSymbol(simboloConstante);
+	}
+:}
+| epsilon;
+ 
+valorconstante ::=   FALSO 
+{:
+	Constante c = new Constante();
+	c.setTipo("LOGICO");
+	RESULT = c;							
+:} | CIERTO 
+{:
+	Constante c = new Constante();
+	c.setTipo("LOGICO");
+	RESULT = c;							
+:}
+| NUM
+{:
+	Constante c = new Constante();
+	c.setTipo("ENTERO");
+	RESULT = c;							
+:};
+
 seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
 
-// Definiciï¿½n de tipos
+// Definición de tipos
 deftipos ::=IDEN ASIGNACION DECLVECTOR CIZQUIERDO valorango RANGO valorango CDERECHO ASIGNACIONVECTOR tipovector  DSENTENCIAS deftipos | epsilon;
 tipovector ::=BOOLEANO | ENTERO ;
 valorango ::= NUM | IDEN | miembrovector;
@@ -258,7 +295,7 @@ procedimiento ::= COMIENZOPROCEDIMIENTO IDEN:id PIZQUIERDO defvariables PDERECHO
     } else {
     	System.out.println("\nEstoy en ELSE\n");
     	
-    	// Insertar tabla tipos y tabla simbolos para la función		
+    	// Insertar tabla tipos y tabla simbolos para la funciï¿½n		
 		ScopeIF scopeP = scopeManager.getCurrentScope();
 		SymbolTableIF symbolTableP = scopeP.getSymbolTable();
 		TypeTableIF typeTableP = scopeP.getTypeTable();
@@ -356,7 +393,7 @@ parteizquierdaasignacion ::= IDEN |miembrovector  ;
 sentenciadeasignacion ::= parteizquierdaasignacion ASIGNACION parametroasignacion DSENTENCIAS; 
 parametroasignacion ::= expresion ;
 
-// Llamada a funciï¿½n
+// Llamada a función
 parametrofuncionoproc ::=     listavariables ;
 llamadafuncion ::= IDEN PIZQUIERDO parametrofuncionoproc PDERECHO;  
 sentenciallamadafuncion ::= llamadafuncion DSENTENCIAS;
