@@ -1,7 +1,7 @@
 programa uno:
 
 constantes
-		a = falso;
+		a = 10;
 		b = cierto;
 		
 subprogramas

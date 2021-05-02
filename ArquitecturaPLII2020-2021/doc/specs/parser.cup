@@ -111,7 +111,7 @@ non terminal  			tipovector;
 non terminal  			valorango;
 non terminal  			secciontipos;
 non terminal  			defvariables;
-non terminal			tipovariable;
+non terminal 			tipovariable;
 non terminal  			listavariables;
 non terminal  			seccionvariables;
 non terminal  			defsubprograma;
@@ -215,7 +215,7 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	//Obtenemos del ámbito creado la Tabla de Tipos
 	TypeTableIF typeTable = scope.getTypeTable();
 	
-	//Introducciï¿½n del Tipo Simple Entero o Integer y Lï¿½gico o Booleano
+	//Introducción del Tipo Simple Entero o Integer y Lógico o Booleano
 	TypeSimple tsEntero = new TypeSimple(scope, "ENTERO");
 	typeTable.addType("ENTERO", tsEntero);
 	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
@@ -225,6 +225,10 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 //Definición de constantes
 defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS defconstantes 
 {:
+
+	//PRUEBA
+	System.out.println("EL VALOR ES: " + valor);
+	
 	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de sï¿½mbolos
 	ScopeIF scope = scopeManager.getCurrentScope();
 	SymbolTableIF tablaSimbolos = scope.getSymbolTable();
@@ -238,7 +242,15 @@ defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS defconst
 		//Introducimos en la tabla de símbolos la constante con su ámbito, nombre, tipo y valor
 		TypeTableIF tablaTipos = scope.getTypeTable();
 		TypeIF tipo = scopeManager.searchType(valor.getTipo());
-		SymbolConstant simboloConstante = new SymbolConstant(scope, id.getLexema(), tipo);
+		
+		//PRUEBA
+
+		System.out.println("VALOR");
+		System.out.println(valor.getValor());
+		//System.out.println(valor.getLexema());
+		
+		
+		SymbolConstant simboloConstante = new SymbolConstant(scope, id.getLexema(), tipo, valor.getValor());
 		tablaSimbolos.addSymbol(simboloConstante);
 	}
 :}
@@ -246,19 +258,17 @@ defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS defconst
  
 valorconstante ::=   FALSO 
 {:
-	Constante c = new Constante();
-	c.setTipo("LOGICO");
+	Constante c = new Constante("LOGICO", "false");
 	RESULT = c;							
-:} | CIERTO 
+:} 
+| CIERTO 
 {:
-	Constante c = new Constante();
-	c.setTipo("LOGICO");
+	Constante c = new Constante("LOGICO", "true");
 	RESULT = c;							
 :}
-| NUM
+| NUM:n
 {:
-	Constante c = new Constante();
-	c.setTipo("ENTERO");
+	Constante c = new Constante("ENTERO", n.getLexema());
 	RESULT = c;							
 :};
 
@@ -270,8 +280,9 @@ tipovector ::=BOOLEANO | ENTERO ;
 valorango ::= NUM | IDEN | miembrovector;
 secciontipos ::= COMIENZODECLTIPOS deftipos | epsilon; 
 
-// Definiciï¿½n de variables
-tipovariable ::= BOOLEANO | ENTERO | IDEN ;
+// Definición de variables
+tipovariable ::= BOOLEANO | ENTERO | IDEN;
+
 selectorvalororeferencia ::=  PARAMETROVALOR IDEN |expresion ;
 defvariables ::= listavariables DELIMFUNC tipovariable puntoycomaopcional defvariables | epsilon; 
 listavariables ::= selectorvalororeferencia DIDENTIFICADORES listavariables | selectorvalororeferencia | epsilon ;
