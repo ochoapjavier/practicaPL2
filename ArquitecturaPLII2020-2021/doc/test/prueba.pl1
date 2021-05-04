@@ -4,16 +4,21 @@ constantes
 		a = 10;
 		b = cierto;
 tipos 
-	a = vector [1..a] de entero;
+	TipoVector = vector [1..a] de entero;
+	
+variables
+	x, z : entero;
+	abierto : booleano;
+	v1, v2 : TipoVector;
 		
-subprogramas
+#subprogramas
 
-procedimiento ejFuncion (a : entero):
-	variables b,c: entero;
-	comienzo
-		c = a + 2;
-		b = a + c;
-	fin;
+#procedimiento ejFuncion (a : entero):
+#	variables b,c: entero;
+#	comienzo
+#		c = a + 2;
+#		b = a + c;
+#	fin;
 	
 
 

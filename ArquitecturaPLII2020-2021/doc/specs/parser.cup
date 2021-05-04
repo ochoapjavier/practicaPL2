@@ -100,68 +100,68 @@ terminal Token ASIGNACION;
 // Declaración de no terminales
 
 
-non terminal  			program;
-non terminal Axiom		axiom;
-non terminal  			epsilon;
-non terminal  			defconstantes;
-non terminal Constante 	valorconstante;
-non terminal  			seccionconstantes;
-non terminal Vect		deftipos;
-non terminal TipoVector	tipovector;
-non terminal Constante	valorango;
-non terminal  			secciontipos;
-non terminal  			defvariables;
-non terminal 			tipovariable;
-non terminal  			listavariables;
-non terminal  			seccionvariables;
-non terminal  			defsubprograma;
-non terminal			puntoycomaopcional;
+non terminal  					program;
+non terminal Axiom				axiom;
+non terminal  					epsilon;
+non terminal  					defconstantes;
+non terminal Constante 			valorconstante;
+non terminal  					seccionconstantes;
+non terminal Vect				deftipos;
+non terminal TipoVector			tipovector;
+non terminal Constante			valorango;
+non terminal  					secciontipos;
+non terminal  					defvariables;
+non terminal Var				tipovariable;
+non terminal SecuenciaVariables	listavariables;
+non terminal  					seccionvariables;
+non terminal  					defsubprograma;
+non terminal					puntoycomaopcional;
 
-non terminal 			tiporetornofuncion;
-non terminal  			seccionsubprograma;
-non terminal  			defprincipal;
-non terminal			selectorvalororeferencia;
-
-
-non terminal			expresion;
-non terminal			expresionlvl2;
-non terminal			expresionlvl3;
-non terminal			expresionlvl4;
-non terminal			expresionlvl5;
+non terminal 					tiporetornofuncion;
+non terminal  					seccionsubprograma;
+non terminal  					defprincipal;
+non terminal IdVar				selectorvalororeferencia;
 
 
+non terminal Expresion			expresion;
+non terminal					expresionlvl2;
+non terminal					expresionlvl3;
+non terminal					expresionlvl4;
+non terminal					expresionlvl5;
 
 
-non terminal			miembrovector;
-non terminal			procedimiento;
-non terminal			funcion;
-non terminal			selectorpof;
-
-non terminal            parametrofuncionoproc;
-non terminal 			llamadafuncion ; 
-
-non terminal 			parteizquierdaasignacion;  
-non terminal 			sentenciadeasignacion;
-
-non terminal 			parametroEscribir ;
-non terminal 			sentenciaEscribir ;
-
-non terminal 			sentencia;
-non terminal 			sentenciaFuncion;
-non terminal 			listaSentencias;
-non terminal 			listaSentenciasFuncion;
-non terminal 			sentenciaif;
-non terminal 			sentenciaifFuncion;
-non terminal 			rellenoif;
-non terminal 			rellenoifFuncion;
-non terminal 			sentenciafor;
-non terminal 			sentenciaforFuncion;
-non terminal 			sentenciaDevolver;
 
 
-non terminal			parametroasignacion;
+non terminal					miembrovector;
+non terminal					procedimiento;
+non terminal					funcion;
+non terminal					selectorpof;
 
-non terminal			sentenciallamadafuncion;
+non terminal           			parametrofuncionoproc;
+non terminal 					llamadafuncion ; 
+
+non terminal 					parteizquierdaasignacion;  
+non terminal 					sentenciadeasignacion;
+
+non terminal 					parametroEscribir ;
+non terminal 					sentenciaEscribir ;
+
+non terminal 					sentencia;
+non terminal 					sentenciaFuncion;
+non terminal 					listaSentencias;
+non terminal 					listaSentenciasFuncion;
+non terminal 					sentenciaif;
+non terminal 					sentenciaifFuncion;
+non terminal 					rellenoif;
+non terminal 					rellenoifFuncion;
+non terminal 					sentenciafor;
+non terminal 					sentenciaforFuncion;
+non terminal 					sentenciaDevolver;
+
+
+non terminal					parametroasignacion;
+
+non terminal					sentenciallamadafuncion;
 
 
 
@@ -222,6 +222,10 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	typeTable.addType("LOGICO", tsLogico);
 :} DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA;
 
+/*--------------------------------------------------------------------------*/
+/*-------------------------------CONSTANTES---------------------------------*/
+/*--------------------------------------------------------------------------*/
+
 //Definición de constantes
 defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS {:
 	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de sï¿½mbolos
@@ -264,6 +268,8 @@ valorconstante ::=   FALSO
 
 seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
 
+/*--------------------------------------------------------------------------*/
+/*-------------------------------DEF TIPOS----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 
@@ -334,18 +340,103 @@ valorango ::= NUM:r
 secciontipos ::= COMIENZODECLTIPOS deftipos | epsilon; 
 
 /*--------------------------------------------------------------------------*/
+/*-------------------------------VARIABLES----------------------------------*/
+/*--------------------------------------------------------------------------*/
 
 // Definición de variables
-tipovariable ::= BOOLEANO | ENTERO | IDEN;
+tipovariable ::= BOOLEANO 
+{: 
+	Var v = new Var("LOGICO");
+	RESULT = v;
+:} 
+| ENTERO 
+{: 
+	Var v = new Var("ENTERO");
+	RESULT = v;
+:} 
+| IDEN:r
+{: 
+	Var v = new Var(r.getLexema());
+	RESULT = v;
+:} ;
 
-selectorvalororeferencia ::=  PARAMETROVALOR IDEN |expresion ;
-defvariables ::= listavariables DELIMFUNC tipovariable puntoycomaopcional defvariables | epsilon; 
-listavariables ::= selectorvalororeferencia DIDENTIFICADORES listavariables | selectorvalororeferencia | epsilon ;
+//x, z : entero;
+defvariables ::= listavariables:lista DELIMFUNC tipovariable:tipo puntoycomaopcional
+{:
+	for (int i = 0; i < lista.size(); i++) {	
+		//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
+		ScopeIF scope = scopeManager.getCurrentScope();
+		SymbolTableIF symTable = scope.getSymbolTable();
+		
+		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
+		if(symTable.containsSymbol(lista.getVariable(i).getId())){
+			semanticErrorManager.semanticFatalError("Variable " + lista.getVariable(i).getId() + " ya declarada");
+		} else {
+			System.out.println("Variable " + lista.getVariable(i).getId() + " aún No declarada");	
+			
+			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
+			TypeTableIF typeTable = scope.getTypeTable();
+			TypeIF type = scopeManager.searchType(tipo.getTipo());
+			
+			SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getId(), type);
+			symTable.addSymbol(simboloVariable);	
+		}
+			
+	}	
+
+:} defvariables
+ 
+| epsilon; 
+
+listavariables ::= selectorvalororeferencia:idVar DIDENTIFICADORES listavariables:lista
+{:
+	SecuenciaVariables sv = new SecuenciaVariables();
+	sv.setListaVariables(lista.getListaVariables());
+	IdVar var = new IdVar (idVar.getId());
+	sv.addVariable(var);
+	RESULT = sv;
+:} 
+| selectorvalororeferencia:idVar
+{:
+	SecuenciaVariables sv = new SecuenciaVariables();
+	IdVar var = new IdVar (idVar.getId());
+	sv.addVariable(var);
+	RESULT = sv;
+:} 
+
+| epsilon ;
+
+
+//Propaga el identificador de la variable
+selectorvalororeferencia ::=  PARAMETROVALOR IDEN:id 
+{:
+	IdVar idVar = new IdVar (id.getLexema());
+	RESULT = idVar;
+:}
+|expresion:ex
+{:
+	if(ex.getTipo().equals("IDEN")){
+		ScopeIF scope = scopeManager.getCurrentScope();
+		SymbolTableIF symTable = scope.getSymbolTable();
+		if (symTable.containsSymbol(ex.getValor())){
+			semanticErrorManager.semanticFatalError("Variable " +ex.getValor() + " ya declarada");
+		} else {
+			IdVar idVar  = new IdVar (ex.getValor());
+			RESULT = idVar;
+		}			
+	} else {
+		semanticErrorManager.semanticFatalError("Error al declarar la variable "+ex.getValor()+", identificador no válido");
+	}
+:};
+
+
+
 seccionvariables ::= DECLVARIABLES defvariables | epsilon  ;
 puntoycomaopcional ::= DSENTENCIAS | epsilon;
 
 /*--------------------------------------------------------------------------*/
-
+/*------------------------------SUBPROGRAMAS--------------------------------*/
+/*--------------------------------------------------------------------------*/
 // Reglas de subprogramas
 tiporetornofuncion ::= IDEN | tipovector ;
 procedimiento ::= COMIENZOPROCEDIMIENTO IDEN:id PIZQUIERDO defvariables PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias FINBLOQUESENTENCIAS DSENTENCIAS
@@ -446,8 +537,25 @@ selectorpof ::= procedimiento | funcion ;
 defsubprograma ::=selectorpof  defsubprograma | epsilon ;
 seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
 
+
+/*--------------------------------------------------------------------------*/
+/*------------------------------EXPRESIONES---------------------------------*/
+/*--------------------------------------------------------------------------*/
+
 // Expresiones
-expresion ::=  expresion MENORQUE  expresion |  expresion IGUALDAD  expresion | IDEN | llamadafuncion | CIERTO | FALSO | miembrovector | NUM | expresionlvl2;
+expresion ::=  expresion MENORQUE  expresion 
+|  expresion IGUALDAD  expresion 
+| IDEN:id
+{: 
+	Expresion ex = new Expresion("IDEN", id.getLexema());
+	RESULT = ex;
+:}  
+| llamadafuncion 
+| CIERTO 
+| FALSO 
+| miembrovector 
+| NUM 
+| expresionlvl2;
 expresionlvl2 ::=  expresion SUMA expresion | expresionlvl3 ;
 expresionlvl3 ::=  expresion YLOGICA expresion |  expresion PRODUCTO expresion | expresionlvl4;
 expresionlvl4 ::= NOLOGICO  expresion | expresionlvl5 ;
