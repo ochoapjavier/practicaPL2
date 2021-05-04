@@ -106,9 +106,9 @@ non terminal  			epsilon;
 non terminal  			defconstantes;
 non terminal Constante 	valorconstante;
 non terminal  			seccionconstantes;
-non terminal  			deftipos;
-non terminal  			tipovector;
-non terminal  			valorango;
+non terminal Vect		deftipos;
+non terminal TipoVector	tipovector;
+non terminal Constante	valorango;
 non terminal  			secciontipos;
 non terminal  			defvariables;
 non terminal 			tipovariable;
@@ -223,12 +223,7 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 :} DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA;
 
 //Definición de constantes
-defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS defconstantes 
-{:
-
-	//PRUEBA
-	System.out.println("EL VALOR ES: " + valor);
-	
+defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS {:
 	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de sï¿½mbolos
 	ScopeIF scope = scopeManager.getCurrentScope();
 	SymbolTableIF tablaSimbolos = scope.getSymbolTable();
@@ -243,17 +238,12 @@ defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS defconst
 		TypeTableIF tablaTipos = scope.getTypeTable();
 		TypeIF tipo = scopeManager.searchType(valor.getTipo());
 		
-		//PRUEBA
-
-		System.out.println("VALOR");
-		System.out.println(valor.getValor());
-		//System.out.println(valor.getLexema());
-		
-		
-		SymbolConstant simboloConstante = new SymbolConstant(scope, id.getLexema(), tipo, valor.getValor());
-		tablaSimbolos.addSymbol(simboloConstante);
+		SymbolConstant simboloConstante = new SymbolConstant(scope, id.getLexema(), tipo);
+		simboloConstante.setValor(valor.getValor());
+		tablaSimbolos.addSymbol(simboloConstante);	
 	}
-:}
+:} defconstantes 
+
 | epsilon;
  
 valorconstante ::=   FALSO 
@@ -274,11 +264,76 @@ valorconstante ::=   FALSO
 
 seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
 
-// Definición de tipos
-deftipos ::=IDEN ASIGNACION DECLVECTOR CIZQUIERDO valorango RANGO valorango CDERECHO ASIGNACIONVECTOR tipovector  DSENTENCIAS deftipos | epsilon;
-tipovector ::=BOOLEANO | ENTERO ;
-valorango ::= NUM | IDEN | miembrovector;
+/*--------------------------------------------------------------------------*/
+
+
+// Definición de tipos (nombreTipo = vector [n1..n2] de TipoPrimitivo;)
+deftipos ::=IDEN:id ASIGNACION DECLVECTOR CIZQUIERDO valorango:v1 RANGO valorango:v2 CDERECHO ASIGNACIONVECTOR tipovector:tipoV  DSENTENCIAS deftipos 
+{:
+	if (Integer.parseInt(v1.getValor()) > Integer.parseInt(v2.getValor())) {
+		//Dar error
+		semanticErrorManager.semanticFatalError("Error fatal, parametros equivocados en el rango del vector");
+	} else {
+		//CREAR VECTOR CON PARAMETROS
+		ScopeIF scope = scopeManager.getCurrentScope();
+		TypeTableIF typeTable = scope.getTypeTable();
+		
+		if(typeTable.containsType(id.getLexema())){
+			semanticErrorManager.semanticFatalError("El identificador "+id.getLexema()+ " en la línea "+id.getLine()+" ya está en uso");
+		} else {
+			TypeIF tipo = scopeManager.searchType(tipoV.getTipo());
+			//Crear TypeArray
+			TypeArray array = new TypeArray (scope, id.getLexema(), Integer.parseInt(v1.getValor()), Integer.parseInt(v2.getValor()), tipoV.getTipo());
+			typeTable.addType(array);
+		}
+	}
+:}
+| epsilon;
+
+tipovector ::= BOOLEANO 
+{: 
+	TipoVector tv = new TipoVector("LOGICO");
+	RESULT = tv;
+:} 
+				
+| ENTERO 
+{: 
+	TipoVector tv = new TipoVector("ENTERO");
+	RESULT = tv;
+:};
+
+
+valorango ::= NUM:r 
+{: 
+	Constante c = new Constante("ENTERO", r.getLexema());
+	RESULT = c;	
+:} 
+
+| IDEN:r 
+{:
+	ScopeIF scope = scopeManager.getCurrentScope();
+	SymbolTableIF sTable = scope.getSymbolTable();
+	if (sTable.containsSymbol(r.getLexema())){
+	
+		//Si la tabla de símbolos contiene el símbolo
+		SymbolIF simbolo = scopeManager.searchSymbol(r.getLexema());
+		if (simbolo instanceof SymbolConstant) {
+			SymbolConstant constante = (SymbolConstant) simbolo;
+			if (simbolo.getType().getName().toString().equals("ENTERO")) {
+				Constante c = new Constante("ENTERO", constante.getValor());
+				RESULT = c;	
+			} else {
+				semanticErrorManager.semanticFatalError("Error fatal, el simbolo "+r.getLexema()+" no es de tipo ENTERO, necesario para el vector");
+			}
+		}
+	} else {
+		semanticErrorManager.semanticFatalError("Error fatal, el simbolo "+r.getLexema()+" no está definido");
+	}
+:}
+| miembrovector;
 secciontipos ::= COMIENZODECLTIPOS deftipos | epsilon; 
+
+/*--------------------------------------------------------------------------*/
 
 // Definición de variables
 tipovariable ::= BOOLEANO | ENTERO | IDEN;
@@ -288,6 +343,8 @@ defvariables ::= listavariables DELIMFUNC tipovariable puntoycomaopcional defvar
 listavariables ::= selectorvalororeferencia DIDENTIFICADORES listavariables | selectorvalororeferencia | epsilon ;
 seccionvariables ::= DECLVARIABLES defvariables | epsilon  ;
 puntoycomaopcional ::= DSENTENCIAS | epsilon;
+
+/*--------------------------------------------------------------------------*/
 
 // Reglas de subprogramas
 tiporetornofuncion ::= IDEN | tipovector ;
@@ -331,8 +388,8 @@ procedimiento ::= COMIENZOPROCEDIMIENTO IDEN:id PIZQUIERDO defvariables PDERECHO
 		
 		//Para comprobar el nivel del ámbito...
 		System.out.println("El nivel del nuevo ámbito es :" + scopeF.getLevel());
-				
-		System.out.println("Cerrando el ámbito :" + scopeP.getName());
+		
+		//Cierra el ámbito del procedimiento (scopeF)
 		scopeManager.closeScope();	
     }
 	

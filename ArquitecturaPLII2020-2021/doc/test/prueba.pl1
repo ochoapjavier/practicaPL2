@@ -3,6 +3,8 @@ programa uno:
 constantes
 		a = 10;
 		b = cierto;
+tipos 
+	a = vector [1..a] de entero;
 		
 subprogramas
 

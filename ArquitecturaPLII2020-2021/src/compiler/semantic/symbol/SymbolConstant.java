@@ -24,7 +24,7 @@ public class SymbolConstant
      */
     public SymbolConstant (ScopeIF scope,
                            String name,
-                           TypeIF type, String valor)
+                           TypeIF type)
     {
         super (scope, name, type);
     }
