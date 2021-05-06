@@ -11,14 +11,21 @@ variables
 	abierto : booleano;
 	v1, v2 : TipoVector;
 		
-#subprogramas
+subprogramas
 
-#procedimiento ejFuncion (a : entero):
-#	variables b,c: entero;
-#	comienzo
-#		c = a + 2;
-#		b = a + c;
-#	fin;
+procedimiento ejFuncion (d : entero):
+	variables e,f: entero;
+	comienzo
+		e = a + 2;
+		f = a + d;
+	fin;
+	
+funcion ejFuncion2 (g,h : entero): entero:
+	variables suma: entero;
+	comienzo
+	suma	 = g + h;
+		devolver suma;
+	fin;
 	
 
 

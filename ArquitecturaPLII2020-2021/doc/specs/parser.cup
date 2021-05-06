@@ -206,12 +206,6 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	scopeManager.openScope(nombre);
 	ScopeIF scope = scopeManager.getCurrentScope();
 	
-	//Para comprobar el nombre del ámbito...
-	System.out.println("El nombre del nuevo ámbito es :" + scope.getName());
-	
-	//Para comprobar el nivel del ámbito...
-	System.out.println("El nivel del nuevo ámbito es :" + scope.getLevel());
-	
 	//Obtenemos del ámbito creado la Tabla de Tipos
 	TypeTableIF typeTable = scope.getTypeTable();
 	
@@ -220,7 +214,11 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	typeTable.addType("ENTERO", tsEntero);
 	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
 	typeTable.addType("LOGICO", tsLogico);
-:} DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA;
+:} 
+DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA
+{:
+	scopeManager.closeScope();
+:};
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------------CONSTANTES---------------------------------*/
@@ -230,24 +228,23 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS {:
 	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de sï¿½mbolos
 	ScopeIF scope = scopeManager.getCurrentScope();
-	SymbolTableIF tablaSimbolos = scope.getSymbolTable();
+	SymbolTableIF symTable = scope.getSymbolTable();
 	
-	//Comprobamos que la constante no este ya contenida en la tabla de sï¿½mbolos
-	if(tablaSimbolos.containsSymbol(id.getLexema())){
+	//Comprobamos que la constante no este ya contenida en la tabla de símmbolos
+	if(symTable.containsSymbol(id.getLexema())){
 		semanticErrorManager.semanticFatalError("Constante " +id.getLexema() + " en linea " + id.getLine() + " ya declarada");
 	} else {
 		System.out.println("Constante " +id.getLexema() + " en linea " + id.getLine() + " aún No declarada");	
 		
 		//Introducimos en la tabla de símbolos la constante con su ámbito, nombre, tipo y valor
-		TypeTableIF tablaTipos = scope.getTypeTable();
+		TypeTableIF typeTable = scope.getTypeTable();
 		TypeIF tipo = scopeManager.searchType(valor.getTipo());
 		
 		SymbolConstant simboloConstante = new SymbolConstant(scope, id.getLexema(), tipo);
 		simboloConstante.setValor(valor.getValor());
-		tablaSimbolos.addSymbol(simboloConstante);	
+		symTable.addSymbol(simboloConstante);	
 	}
 :} defconstantes 
-
 | epsilon;
  
 valorconstante ::=   FALSO 
@@ -380,10 +377,8 @@ defvariables ::= listavariables:lista DELIMFUNC tipovariable:tipo puntoycomaopci
 			
 			SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getId(), type);
 			symTable.addSymbol(simboloVariable);	
-		}
-			
+		}		
 	}	
-
 :} defvariables
  
 | epsilon; 
@@ -439,98 +434,61 @@ puntoycomaopcional ::= DSENTENCIAS | epsilon;
 /*--------------------------------------------------------------------------*/
 // Reglas de subprogramas
 tiporetornofuncion ::= IDEN | tipovector ;
-procedimiento ::= COMIENZOPROCEDIMIENTO IDEN:id PIZQUIERDO defvariables PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias FINBLOQUESENTENCIAS DSENTENCIAS
+
+//procedimiento ejemplo (a : entero):
+	//variables b,c: entero;
+	//comienzo
+		//c = a + 2;
+		//b = a + c;
+	//fin;
+procedimiento ::= COMIENZOPROCEDIMIENTO IDEN:id 
 {:
 	ScopeIF scope = scopeManager.getCurrentScope();
-	SymbolTableIF symbolTable = scope.getSymbolTable();
+	SymbolTableIF symTable = scope.getSymbolTable();
 	TypeTableIF typeTable = scope.getTypeTable();
 	
-	if (typeTable.containsType(id.getLexema()) || symbolTable.containsSymbol(id.getLexema())) {
-		 
-		System.out.println("\nEstoy en IF\n");
-		
-		semanticErrorManager.semanticFatalError("Error al declarar la funcion "+id.getLexema()+", ya ha sido declarada");
-		
-    } else {
-    	System.out.println("\nEstoy en ELSE\n");
-    	
-    	// Insertar tabla tipos y tabla simbolos para la funciï¿½n		
-		ScopeIF scopeP = scopeManager.getCurrentScope();
-		SymbolTableIF symbolTableP = scopeP.getSymbolTable();
-		TypeTableIF typeTableP = scopeP.getTypeTable();
-		
+	if (typeTable.containsType(id.getLexema()) || symTable.containsSymbol(id.getLexema())) {	
+		semanticErrorManager.semanticFatalError("Error al declarar el procedimiento "+id.getLexema()+", identificador en uso");	
+    } else {   		
 		// Crear Tipo y Simbolo de la Función
 		TypeProcedure tipoProcedure = new TypeProcedure(scope, id.getLexema());		
-		typeTableP.addType(id.getLexema(), tipoProcedure);
-		SymbolProcedure simboloProcedimiento = new SymbolProcedure(scope, id.getLexema(), typeTableP.getType(id.getLexema()));
+		typeTable.addType(id.getLexema(), tipoProcedure);
+		SymbolProcedure simboloProcedimiento = new SymbolProcedure(scope, id.getLexema(), typeTable.getType(id.getLexema()));
         
-        symbolTableP.addSymbol(id.getLexema(),simboloProcedimiento);
-		syntaxErrorManager.syntaxInfo("Procedimiento en las tablas: "+id.getLexema());
+        symTable.addSymbol(id.getLexema(),simboloProcedimiento);
 		
-		//Crear ambito para la función
+		//Abrir ámbito
 		ScopeIF scopeF = scopeManager.openScope (id.getLexema());
-		SymbolTableIF symbolTableF = scopeF.getSymbolTable();
-		TypeTableIF typeTableF = scopeF.getTypeTable();
-	
-				
-	
-		//Para comprobar el nombre del ámbito...
-		System.out.println("El nombre del nuevo ámbito es :" + scopeF.getName());
-		
-		//Para comprobar el nivel del ámbito...
-		System.out.println("El nivel del nuevo ámbito es :" + scopeF.getLevel());
-		
-		//Cierra el ámbito del procedimiento (scopeF)
-		scopeManager.closeScope();	
-    }
-	
-	
+    }	
+:} 
+PIZQUIERDO defvariables PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias FINBLOQUESENTENCIAS DSENTENCIAS
+{:
+	scopeManager.closeScope();
 :};
 
-funcion ::= DECLAREFUNCION IDEN:id PIZQUIERDO defvariables PDERECHO DELIMFUNC tiporetornofuncion DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion listaSentenciasFuncion FINBLOQUESENTENCIAS DSENTENCIAS
+funcion ::= DECLAREFUNCION IDEN:id 
 {:
 	ScopeIF scope = scopeManager.getCurrentScope();
-	SymbolTableIF symbolTable = scope.getSymbolTable();
+	SymbolTableIF symTable = scope.getSymbolTable();
 	TypeTableIF typeTable = scope.getTypeTable();
 	
-	if (typeTable.containsType(id.getLexema()) || symbolTable.containsSymbol(id.getLexema())) {
-		 
-		System.out.println("\nEstoy en IF\n");
-		
-		semanticErrorManager.semanticFatalError("Error al declarar la funcion "+id.getLexema()+", ya ha sido declarada");
-		
-    } else {
-    	System.out.println("\nEstoy en ELSE\n");
-    	
-    	// Insertar tabla tipos y tabla simbolos para la función		
-		ScopeIF scopeP = scopeManager.getCurrentScope();
-		SymbolTableIF symbolTableP = scopeP.getSymbolTable();
-		TypeTableIF typeTableP = scopeP.getTypeTable();
-		
+	if (typeTable.containsType(id.getLexema()) || symTable.containsSymbol(id.getLexema())) {	
+		semanticErrorManager.semanticFatalError("Error al declarar la funcion "+id.getLexema()+", identificador en uso");	
+    } else {   		
 		// Crear Tipo y Simbolo de la Función
 		TypeFunction tipoFuncion = new TypeFunction(scope, id.getLexema());		
-		typeTableP.addType(id.getLexema(), tipoFuncion);
-		SymbolFunction simboloFuncion = new SymbolFunction(scope, id.getLexema(), typeTableP.getType(id.getLexema()));
+		typeTable.addType(id.getLexema(), tipoFuncion);
+		SymbolFunction simboloFuncion = new SymbolFunction(scope, id.getLexema(), typeTable.getType(id.getLexema()));
         
-        symbolTableP.addSymbol(id.getLexema(),simboloFuncion);
-		syntaxErrorManager.syntaxInfo("Funcion en las tablas: "+id.getLexema());
+        symTable.addSymbol(id.getLexema(),simboloFuncion);
 		
-		//Crear ambito para la función
+		//Abrir ámbito
 		ScopeIF scopeF = scopeManager.openScope (id.getLexema());
-		SymbolTableIF symbolTableF = scopeF.getSymbolTable();
-		TypeTableIF typeTableF = scopeF.getTypeTable();
-	
-				
-	
-		//Para comprobar el nombre del ámbito...
-		System.out.println("El nombre del nuevo ámbito es :" + scopeF.getName());
-		
-		//Para comprobar el nivel del ámbito...
-		System.out.println("El nivel del nuevo ámbito es :" + scopeF.getLevel());
-				
-		System.out.println("Cerrando el ámbito :" + scopeP.getName());
-		scopeManager.closeScope();	
-    }
+    }	
+:} 
+PIZQUIERDO defvariables PDERECHO DELIMFUNC tiporetornofuncion DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion listaSentenciasFuncion FINBLOQUESENTENCIAS DSENTENCIAS
+{:
+	scopeManager.closeScope();
 :};
 
 selectorpof ::= procedimiento | funcion ;
