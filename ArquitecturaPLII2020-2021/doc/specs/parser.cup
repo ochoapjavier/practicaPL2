@@ -110,17 +110,17 @@ non terminal Vect				deftipos;
 non terminal TipoVector			tipovector;
 non terminal Constante			valorango;
 non terminal  					secciontipos;
-non terminal  					defvariables;
+non terminal SecuenciaVariables	defvariables;
 non terminal Var				tipovariable;
 non terminal SecuenciaVariables	listavariables;
-non terminal  					seccionvariables;
+non terminal SecuenciaVariables	seccionvariables;
 non terminal  					defsubprograma;
 non terminal					puntoycomaopcional;
 
 non terminal 					tiporetornofuncion;
 non terminal  					seccionsubprograma;
 non terminal  					defprincipal;
-non terminal IdVar				selectorvalororeferencia;
+non terminal Var				selectorvalororeferencia;
 
 
 non terminal Expresion			expresion;
@@ -360,41 +360,24 @@ tipovariable ::= BOOLEANO
 //x, z : entero;
 defvariables ::= listavariables:lista DELIMFUNC tipovariable:tipo puntoycomaopcional
 {:
-	for (int i = 0; i < lista.size(); i++) {	
-		//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
-		ScopeIF scope = scopeManager.getCurrentScope();
-		SymbolTableIF symTable = scope.getSymbolTable();
-		
-		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
-		if(symTable.containsSymbol(lista.getVariable(i).getId())){
-			semanticErrorManager.semanticFatalError("Variable " + lista.getVariable(i).getId() + " ya declarada");
-		} else {
-			System.out.println("Variable " + lista.getVariable(i).getId() + " aún No declarada");	
-			
-			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
-			TypeTableIF typeTable = scope.getTypeTable();
-			TypeIF type = scopeManager.searchType(tipo.getTipo());
-			
-			SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getId(), type);
-			symTable.addSymbol(simboloVariable);	
-		}		
-	}	
+	for (int i = 0; i < lista.size(); i++) {
+			lista.getVariable(i).setTipo(tipo.getTipo());			
+	}
+	RESULT = lista;		
 :} defvariables
  
 | epsilon; 
 
-listavariables ::= selectorvalororeferencia:idVar DIDENTIFICADORES listavariables:lista
+listavariables ::= selectorvalororeferencia:var DIDENTIFICADORES listavariables:lista
 {:
 	SecuenciaVariables sv = new SecuenciaVariables();
 	sv.setListaVariables(lista.getListaVariables());
-	IdVar var = new IdVar (idVar.getId());
 	sv.addVariable(var);
 	RESULT = sv;
 :} 
-| selectorvalororeferencia:idVar
+| selectorvalororeferencia:var
 {:
 	SecuenciaVariables sv = new SecuenciaVariables();
-	IdVar var = new IdVar (idVar.getId());
 	sv.addVariable(var);
 	RESULT = sv;
 :} 
@@ -405,8 +388,8 @@ listavariables ::= selectorvalororeferencia:idVar DIDENTIFICADORES listavariable
 //Propaga el identificador de la variable
 selectorvalororeferencia ::=  PARAMETROVALOR IDEN:id 
 {:
-	IdVar idVar = new IdVar (id.getLexema());
-	RESULT = idVar;
+	Var var = new Var (id.getLexema(), null, null);
+	RESULT = var;
 :}
 |expresion:ex
 {:
@@ -416,8 +399,8 @@ selectorvalororeferencia ::=  PARAMETROVALOR IDEN:id
 		if (symTable.containsSymbol(ex.getValor())){
 			semanticErrorManager.semanticFatalError("Variable " +ex.getValor() + " ya declarada");
 		} else {
-			IdVar idVar  = new IdVar (ex.getValor());
-			RESULT = idVar;
+			Var var  = new Var (ex.getValor(), null, null);
+			RESULT = var;
 		}			
 	} else {
 		semanticErrorManager.semanticFatalError("Error al declarar la variable "+ex.getValor()+", identificador no válido");
@@ -426,7 +409,26 @@ selectorvalororeferencia ::=  PARAMETROVALOR IDEN:id
 
 
 
-seccionvariables ::= DECLVARIABLES defvariables | epsilon  ;
+seccionvariables ::= DECLVARIABLES defvariables:lista
+{:
+	for (int i = 0; i < lista.size(); i++) {
+		//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
+		ScopeIF scope = scopeManager.getCurrentScope();
+		SymbolTableIF symTable = scope.getSymbolTable();
+		
+		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
+		if(symTable.containsSymbol(lista.getVariable(i).getId())){
+			semanticErrorManager.semanticFatalError("Variable " + lista.getVariable(i).getId() + " ya declarada");
+		} else {				
+			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
+			TypeTableIF typeTable = scope.getTypeTable();
+			TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());
+			
+			SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getId(), type);
+			symTable.addSymbol(simboloVariable);
+		}		
+	}
+:} | epsilon;
 puntoycomaopcional ::= DSENTENCIAS | epsilon;
 
 /*--------------------------------------------------------------------------*/
@@ -461,7 +463,27 @@ procedimiento ::= COMIENZOPROCEDIMIENTO IDEN:id
 		ScopeIF scopeF = scopeManager.openScope (id.getLexema());
     }	
 :} 
-PIZQUIERDO defvariables PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias FINBLOQUESENTENCIAS DSENTENCIAS
+PIZQUIERDO defvariables:lista
+{:
+	for (int i = 0; i < lista.size(); i++) {
+		//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
+		ScopeIF scope = scopeManager.getCurrentScope();
+		SymbolTableIF symTable = scope.getSymbolTable();
+		
+		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
+		if(symTable.containsSymbol(lista.getVariable(i).getId())){
+			semanticErrorManager.semanticFatalError("Parametro " + lista.getVariable(i).getId() + " con identificador en uso");
+		} else {				
+			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
+			TypeTableIF typeTable = scope.getTypeTable();
+			TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());
+			
+			SymbolParameter parametro = new SymbolParameter(scope, lista.getVariable(i).getId(), type);
+			symTable.addSymbol(parametro);
+		}		
+	}
+:} 
+PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias FINBLOQUESENTENCIAS DSENTENCIAS
 {:
 	scopeManager.closeScope();
 :};
@@ -486,7 +508,27 @@ funcion ::= DECLAREFUNCION IDEN:id
 		ScopeIF scopeF = scopeManager.openScope (id.getLexema());
     }	
 :} 
-PIZQUIERDO defvariables PDERECHO DELIMFUNC tiporetornofuncion DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion listaSentenciasFuncion FINBLOQUESENTENCIAS DSENTENCIAS
+PIZQUIERDO defvariables:lista
+{:
+	for (int i = 0; i < lista.size(); i++) {
+		//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
+		ScopeIF scope = scopeManager.getCurrentScope();
+		SymbolTableIF symTable = scope.getSymbolTable();
+		
+		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
+		if(symTable.containsSymbol(lista.getVariable(i).getId())){
+			semanticErrorManager.semanticFatalError("Parametro " + lista.getVariable(i).getId() + " con identificador en uso");
+		} else {				
+			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
+			TypeTableIF typeTable = scope.getTypeTable();
+			TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());
+			
+			SymbolParameter parametro = new SymbolParameter(scope, lista.getVariable(i).getId(), type);
+			symTable.addSymbol(parametro);
+		}		
+	}
+:}  
+PDERECHO DELIMFUNC tiporetornofuncion DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion listaSentenciasFuncion FINBLOQUESENTENCIAS DSENTENCIAS
 {:
 	scopeManager.closeScope();
 :};

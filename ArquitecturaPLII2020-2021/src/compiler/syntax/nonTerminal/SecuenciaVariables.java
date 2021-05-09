@@ -5,26 +5,26 @@ import java.util.List;
 
 public class SecuenciaVariables extends NonTerminal{
 	
-	private List<IdVar> listaVariables;
+	private List<Var> listaVariables;
 
 	public SecuenciaVariables() {
 		super();
-		this.listaVariables = new ArrayList<IdVar>();
+		this.listaVariables = new ArrayList<Var>();
 	}
 	
-	public IdVar getVariable(int index) {
+	public Var getVariable(int index) {
 		return this.listaVariables.get(index);	
 	}
 	
-	public void addVariable(IdVar idVar) {
-		this.listaVariables.add(idVar);
+	public void addVariable(Var var) {
+		this.listaVariables.add(var);
 	}
 	
-	public List<IdVar> getListaVariables() {
+	public List<Var> getListaVariables() {
 		return listaVariables;
 	}
 
-	public void setListaVariables(List<IdVar> listaVariables) {
+	public void setListaVariables(List<Var> listaVariables) {
 		this.listaVariables = listaVariables;
 	}
 	
