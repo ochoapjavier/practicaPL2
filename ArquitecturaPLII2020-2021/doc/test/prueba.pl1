@@ -13,17 +13,32 @@ variables
 		
 subprogramas
 
+
 procedimiento ejFuncion (d : entero):
 	variables e,f: entero;
+	verdad : booleano;
 	comienzo
-		e = a + 2;
+		e = d;
+		verdad = NO cierto;
+		f = e + f;
+		verdad = 3 < e;
+		verdad = 5 == 4;
 		f = a + d;
 	fin;
 	
 funcion ejFuncion2 (g,h : entero): entero:
 	variables suma: entero;
 	comienzo
-	suma	 = g + h;
+		suma = g;
+		devolver suma;
+	fin;
+	
+funcion ejFuncion3 (var a,b : entero): entero:
+	variables suma: entero;
+	comienzo
+		suma = a;
+		#a = a + 2;
+		#b = b * 2;
 		devolver suma;
 	fin;
 	
@@ -33,5 +48,7 @@ funcion ejFuncion2 (g,h : entero): entero:
 
 
 comienzo
+
+#i = 3 + 7;
 
 fin.

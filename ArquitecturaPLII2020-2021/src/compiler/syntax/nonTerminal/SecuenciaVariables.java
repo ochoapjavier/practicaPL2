@@ -12,12 +12,23 @@ public class SecuenciaVariables extends NonTerminal{
 		this.listaVariables = new ArrayList<Var>();
 	}
 	
+	public SecuenciaVariables(SecuenciaVariables sv) {
+		super();
+		this.listaVariables = (List<Var>) sv;
+	}
+	
 	public Var getVariable(int index) {
 		return this.listaVariables.get(index);	
 	}
 	
 	public void addVariable(Var var) {
 		this.listaVariables.add(var);
+	}
+	
+	public void addLista(List<Var> lista) {
+		for (int i = 0; i < lista.size(); i++) {
+			this.listaVariables.add(lista.get(i));
+		}
 	}
 	
 	public List<Var> getListaVariables() {

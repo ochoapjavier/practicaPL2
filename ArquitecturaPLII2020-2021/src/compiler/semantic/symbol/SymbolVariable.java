@@ -14,7 +14,7 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
 public class SymbolVariable
     extends SymbolBase
 {  
-	 private String valor;
+	private String valor;
    
     /**
      * Constructor for SymbolVariable.

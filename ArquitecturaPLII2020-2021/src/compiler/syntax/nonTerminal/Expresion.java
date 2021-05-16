@@ -4,6 +4,8 @@ public class Expresion extends NonTerminal{
 	
 	private String tipo;
 	private String valor;
+	private String rango;
+	private String id;
 
 	public Expresion() {
 		super();
@@ -15,6 +17,14 @@ public class Expresion extends NonTerminal{
 		this.valor = valor;
 	}
 	
+	public String getRango() {
+		return rango;
+	}
+
+	public void setRango(String rango) {
+		this.rango = rango;
+	}
+
 	public void setValor(String valor) {
 		this.valor = valor;
 	}
@@ -31,9 +41,15 @@ public class Expresion extends NonTerminal{
 		return tipo;
 	}
 	
-	public String toString(){
-		return "Expresion[type:" + this.tipo+" value:" + this.valor+"]";
+	public String getId() {
+		return id;
 	}
 
-
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public String toString(){
+		return "Expresion[type:" + this.tipo+" value:" + this.valor+" id:"+this.id+"]";
+	}
 }

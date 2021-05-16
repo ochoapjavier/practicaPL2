@@ -1,5 +1,9 @@
 package compiler.semantic.type;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import compiler.semantic.symbol.SymbolParameter;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.type.TypeBase;
 
@@ -13,6 +17,8 @@ import es.uned.lsi.compiler.semantic.type.TypeBase;
 public class TypeProcedure
     extends TypeBase
 {   
+	private List<SymbolParameter> listaParametros;
+
    /**
      * Constructor for TypeProcedure.
      * @param scope The declaration scope.
@@ -20,6 +26,7 @@ public class TypeProcedure
     public TypeProcedure (ScopeIF scope)
     {
         super (scope);
+        this.listaParametros = new ArrayList<SymbolParameter>();
     }
 
     /**
@@ -30,6 +37,11 @@ public class TypeProcedure
     public TypeProcedure (ScopeIF scope, String name)
     {
         super (scope, name);
+        this.listaParametros = new ArrayList<SymbolParameter>();
+    }     
+    
+    public void addParametro(SymbolParameter parametro) {
+    	this.listaParametros.add(parametro);
     }
     
     /**
