@@ -18,25 +18,30 @@ procedimiento ejFuncion (d : entero):
 	variables e,f: entero;
 	verdad : booleano;
 	comienzo
-		e = d;
-		verdad = NO cierto;
-		f = e + f;
-		verdad = 3 < e;
-		verdad = 5 == 4;
-		f = a + d;
+		#d = d + a;
+		d = 2;
+		v1[1] = 8;
+		v1[2] = 3;
+		d = v1[v1[2]];
+		#e = d;
+		#verdad = NO cierto;
+		#f = e + f;
+		#verdad = 3 < e;
+		#verdad = 5 == f;
+		#f = a + d;
 	fin;
 	
 funcion ejFuncion2 (g,h : entero): entero:
 	variables suma: entero;
 	comienzo
-		suma = g;
+		suma = g + h;
 		devolver suma;
 	fin;
 	
 funcion ejFuncion3 (var a,b : entero): entero:
 	variables suma: entero;
 	comienzo
-		suma = a;
+		#suma = a;
 		#a = a + 2;
 		#b = b * 2;
 		devolver suma;
@@ -48,7 +53,19 @@ funcion ejFuncion3 (var a,b : entero): entero:
 
 
 comienzo
-
-#i = 3 + 7;
+	
+	abierto = cierto;
+	x = 5;
+	z = 4;
+	
+	escribir("hola");
+	escribir();
+	escribir(x);
+	escribir(z);
+	escribir(x+z);
+	#escribir(x<z);
+	
+	ejFuncion(x);
+	ejFuncion2(x,29);
 
 fin.

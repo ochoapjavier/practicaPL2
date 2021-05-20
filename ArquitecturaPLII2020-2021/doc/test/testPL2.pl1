@@ -1,0 +1,55 @@
+
+	programa test:
+	  constantes
+	  		A = 10;
+	  		B = 20;
+	  		C = 8;
+	  		#C = cierto;						
+	  		D = cierto;
+	  		#E = ;							
+	  tipos
+	  		tipo1 = vector [1..A] de entero;
+	  		tipo2 = vector [1..C] de booleano; 
+	  		tipo3 = vector [1..20] de booleano;
+	  		
+	  variables
+	  		var1:booleano;
+	  		var2:tipo1;
+			#var3:hola;
+	  
+	  	subprogramas
+	  		funcion fun1():entero:
+	  			
+	  			comienzo
+	  				devolver cierto;
+	  			fin;
+	  		funcion fun2(a : entero):booleano:
+		  			
+		  		comienzo
+		  			si (2==2) entonces: 
+		  				devolver cierto;					
+		  			fin si;									
+		  		fin;
+		  			
+	  		funcion fun3():booleano:
+	  			comienzo
+	  				devolver cierto;
+	  			fin;
+	  comienzo
+	  	escribir("hola mundo");  	
+		escribir(10);					
+	
+		#si (10 == A);					
+		#si ;								
+		si (9==1) entonces:
+		fin si;							
+		
+		si (2==2) entonces: var1=cierto; sino: var1=cierto; fin si;
+		
+		para var7 en falso .. 10 :
+			var1 = falso; 
+		fin para;									
+
+		para var7 en 1 .. 10 : fin para;				
+
+	  fin.

@@ -44,6 +44,7 @@ public class TypeProcedure
     	this.listaParametros.add(parametro);
     }
     
+    
     /**
      * Returns the size of the type.
      * @return the size of the type.
@@ -54,4 +55,12 @@ public class TypeProcedure
         // TODO: Student work
         return 1;
     }
+
+	public List<SymbolParameter> getListaParametros() {
+		return listaParametros;
+	}
+
+	public void setListaParametros(List<SymbolParameter> listaParametros) {
+		this.listaParametros = listaParametros;
+	}
 }

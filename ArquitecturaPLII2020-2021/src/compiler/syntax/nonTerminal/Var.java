@@ -15,9 +15,8 @@ public class Var extends NonTerminal{
 		this.tipo = tipo;
 	}
 	
-	public Var(String id, String tipo, String valor) {
+	public Var(String tipo, String valor) {
 		super();
-		this.id = id;
 		this.tipo = tipo;
 		this.valor = valor;
 	}

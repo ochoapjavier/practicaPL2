@@ -132,31 +132,31 @@ non terminal Expresion			expresionlvl5;
 
 
 
-non terminal					miembrovector;
+non terminal Expresion			miembrovector;
 non terminal					procedimiento;
 non terminal					funcion;
 non terminal					selectorpof;
 
-non terminal           			parametrofuncionoproc;
-non terminal 					llamadafuncion ; 
+non terminal SecuenciaVariables parametrofuncionoproc;
+non terminal Expresion			llamadafuncion ; 
 
 non terminal Expresion			parteizquierdaasignacion;  
-non terminal 					sentenciadeasignacion;
+non terminal Sentencia			sentenciadeasignacion;
 
-non terminal 					parametroEscribir ;
-non terminal 					sentenciaEscribir ;
+non terminal Expresion			parametroEscribir ;
+non terminal Sentencia			sentenciaEscribir ;
 
-non terminal 					sentencia;
-non terminal 					sentenciaFuncion;
-non terminal 					listaSentencias;
-non terminal 					listaSentenciasFuncion;
-non terminal 					sentenciaif;
-non terminal 					sentenciaifFuncion;
-non terminal 					rellenoif;
-non terminal 					rellenoifFuncion;
-non terminal 					sentenciafor;
-non terminal 					sentenciaforFuncion;
-non terminal 					sentenciaDevolver;
+non terminal Sentencia			sentencia;
+non terminal Sentencia			sentenciaFuncion;
+non terminal ListaSentencias	listaSentencias;
+non terminal ListaSentencias	listaSentenciasFuncion;
+non terminal Sentencia			sentenciaif;
+non terminal Sentencia			sentenciaifFuncion;
+non terminal Sentencia 			rellenoif;
+non terminal Sentencia			rellenoifFuncion;
+non terminal Sentencia			sentenciafor;
+non terminal Sentencia			sentenciaforFuncion;
+non terminal Sentencia			sentenciaDevolver;
 
 
 non terminal Expresion			parametroasignacion;
@@ -303,13 +303,14 @@ tipovector ::= BOOLEANO
 	RESULT = tv;
 :};
 
-
+//[3]
 valorango ::= NUM:r 
 {: 
 	Constante c = new Constante("ENTERO", r.getLexema());
 	RESULT = c;	
 :} 
 
+//[i]
 | IDEN:r 
 {:
 	ScopeIF scope = scopeManager.getCurrentScope();
@@ -331,7 +332,13 @@ valorango ::= NUM:r
 		semanticErrorManager.semanticFatalError("Error fatal, el simbolo "+r.getLexema()+" no está definido");
 	}
 :}
-| miembrovector;
+
+//[v1[2]]
+| miembrovector:r
+{:
+	Constante c = new Constante(r.getTipo(), r.getValor());
+	RESULT = c;	
+:};
 secciontipos ::= COMIENZODECLTIPOS deftipos | epsilon; 
 
 /*--------------------------------------------------------------------------*/
@@ -396,22 +403,20 @@ listavariables ::= selectorvalororeferencia:var DIDENTIFICADORES listavariables:
 //Propaga el identificador de la variable
 selectorvalororeferencia ::=  PARAMETROVALOR IDEN:id 
 {:
-	Var var = new Var (id.getLexema(), null, null);
+	Var var = new Var (null, id.getLexema());
 	RESULT = var;
 :}
 |expresion:ex
 {:
-	if(ex.getTipo().equals("IDEN")){
+	//Si el tipo es null (es de tipo IDEN)
+	if(ex.getTipo() == null){
 		ScopeIF scope = scopeManager.getCurrentScope();
 		SymbolTableIF symTable = scope.getSymbolTable();
-		if (symTable.containsSymbol(ex.getValor())){
-			semanticErrorManager.semanticFatalError("Variable " +ex.getValor() + " ya declarada");
-		} else {
-			Var var  = new Var (ex.getId(), null, null);
-			RESULT = var;
-		}			
+		Var var  = new Var (null, ex.getValor());
+		RESULT = var;			
 	} else {
-		semanticErrorManager.semanticFatalError("Error al declarar la variable "+ex.getId()+", identificador no válido");
+		Var var = new Var (ex.getTipo(), ex.getValor());
+		RESULT = var;
 	}
 :};
 
@@ -424,14 +429,19 @@ seccionvariables ::= DECLVARIABLES defvariables:lista
 		
 		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
 		if(symTable.containsSymbol(lista.getVariable(i).getId())){
-			semanticErrorManager.semanticFatalError("Variable " + lista.getVariable(i).getId() + " ya declarada");
+			semanticErrorManager.semanticFatalError("Variable " + lista.getVariable(i).getValor() + " ya declarada");
 		} else {				
 			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
 			TypeTableIF typeTable = scope.getTypeTable();
 			TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());	
 			
-			SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getId(), type);
-			symTable.addSymbol(simboloVariable);			
+			if (type == null) {
+				semanticErrorManager.semanticFatalError("Error al declarar la variable " + lista.getVariable(i).getValor() + " el tipo " 
+				+ lista.getVariable(i).getTipo() + " no existe");
+			} else {
+				SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getValor(), type);
+				symTable.addSymbol(simboloVariable);
+			}			
 		}		
 	}
 :} | epsilon;
@@ -441,8 +451,6 @@ puntoycomaopcional ::= DSENTENCIAS | epsilon;
 /*------------------------------SUBPROGRAMAS--------------------------------*/
 /*--------------------------------------------------------------------------*/
 // Reglas de subprogramas
-tiporetornofuncion ::= IDEN | tipovector ;
-
 //procedimiento ejemplo (a : entero):
 	//variables b,c: entero;
 	//comienzo
@@ -471,25 +479,27 @@ procedimiento ::= COMIENZOPROCEDIMIENTO IDEN:id
 :} 
 PIZQUIERDO defvariables:lista
 {:
-	for (int i = 0; i < lista.size(); i++) {
-		//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
-		ScopeIF scope = scopeManager.getCurrentScope();
-		SymbolTableIF symTable = scope.getSymbolTable();
-		
-		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
-		if(symTable.containsSymbol(lista.getVariable(i).getId())){
-			semanticErrorManager.semanticFatalError("Parametro " + lista.getVariable(i).getId() + " con identificador en uso");
-		} else {				
-			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
-			TypeTableIF typeTable = scope.getTypeTable();
-			TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());			
-						
-			SymbolParameter parametro = new SymbolParameter(scope, lista.getVariable(i).getId(), type);
-			symTable.addSymbol(parametro);
-						
-			TypeProcedure procedimiento = (TypeProcedure)scopeManager.searchType(scope.getName());
-			procedimiento.addParametro(parametro);
-		}		
+	if (lista != null){
+		for (int i = 0; i < lista.size(); i++) {
+			//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
+			ScopeIF scope = scopeManager.getCurrentScope();
+			SymbolTableIF symTable = scope.getSymbolTable();
+			
+			//Comprobamos que la variable no este ya contenida en la tabla de símbolos
+			if(symTable.containsSymbol(lista.getVariable(i).getId())){
+				semanticErrorManager.semanticFatalError("Parametro " + lista.getVariable(i).getId() + " con identificador en uso");
+			} else {				
+				//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
+				TypeTableIF typeTable = scope.getTypeTable();
+				TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());			
+							
+				SymbolParameter parametro = new SymbolParameter(scope, lista.getVariable(i).getValor(), type);
+				symTable.addSymbol(parametro);
+							
+				TypeProcedure procedimiento = (TypeProcedure)scopeManager.searchType(scope.getName());
+				procedimiento.addParametro(parametro);
+			}		
+		}
 	}
 :} 
 PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentencia listaSentencias FINBLOQUESENTENCIAS DSENTENCIAS
@@ -497,6 +507,21 @@ PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubpro
 	scopeManager.closeScope();
 :};
 
+
+tiporetornofuncion ::= IDEN:id
+{:
+	RESULT = id.getLexema();
+:} 
+| tipovector:tv
+{:
+	RESULT = tv.getTipo();
+:};
+/*funcion funcion():entero:
+	  			
+		comienzo
+			devolver 1;
+		fin;
+*/
 funcion ::= DECLAREFUNCION IDEN:id 
 {:
 	ScopeIF scope = scopeManager.getCurrentScope();
@@ -519,28 +544,31 @@ funcion ::= DECLAREFUNCION IDEN:id
 :} 
 PIZQUIERDO defvariables:lista
 {:
-	for (int i = 0; i < lista.size(); i++) {
-		//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
-		ScopeIF scope = scopeManager.getCurrentScope();
-		SymbolTableIF symTable = scope.getSymbolTable();
-		
-		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
-		if(symTable.containsSymbol(lista.getVariable(i).getId())){
-			semanticErrorManager.semanticFatalError("Parametro " + lista.getVariable(i).getId() + " con identificador en uso");
-		} else {				
-			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
-			TypeTableIF typeTable = scope.getTypeTable();
-			TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());			
-						
-			SymbolParameter parametro = new SymbolParameter(scope, lista.getVariable(i).getId(), type);
-			symTable.addSymbol(parametro);	
+	//Si la lista no está vacía
+	if (lista != null){
+		for (int i = 0; i < lista.size(); i++) {
+			//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
+			ScopeIF scope = scopeManager.getCurrentScope();
+			SymbolTableIF symTable = scope.getSymbolTable();
 			
-			TypeFunction funcion = (TypeFunction)scopeManager.searchType(scope.getName());
-			funcion.addParametro(parametro);
-		}		
+			//Comprobamos que la variable no este ya contenida en la tabla de símbolos
+			if(symTable.containsSymbol(lista.getVariable(i).getId())){
+				semanticErrorManager.semanticFatalError("Parametro " + lista.getVariable(i).getId() + " con identificador en uso");
+			} else {				
+				//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
+				TypeTableIF typeTable = scope.getTypeTable();
+				TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());			
+							
+				SymbolParameter parametro = new SymbolParameter(scope, lista.getVariable(i).getValor(), type);
+				symTable.addSymbol(parametro);	
+				
+				TypeFunction funcion = (TypeFunction)scopeManager.searchType(scope.getName());
+				funcion.addParametro(parametro);
+			}		
+		}
 	}
 :}  
-PDERECHO DELIMFUNC tiporetornofuncion DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion listaSentenciasFuncion FINBLOQUESENTENCIAS DSENTENCIAS
+PDERECHO DELIMFUNC tiporetornofuncion:tipo DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion:s listaSentenciasFuncion:ls FINBLOQUESENTENCIAS DSENTENCIAS
 {:
 	scopeManager.closeScope();
 :};
@@ -557,29 +585,33 @@ seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
 // Expresiones
 expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 {: 	
-	if (exp1.getTipo().equals("IDEN")){
-		exp1.setTipo(scopeManager.searchSymbol(exp1.getId()).getType().getName());
+	if (exp1.getTipo() == null){
+		semanticErrorManager.semanticFatalError("Error en la comparación menorque entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp1.getValor() + " no existe");
 	}
 	
-	if (exp2.getTipo().equals("IDEN")){
-		exp2.setTipo(scopeManager.searchSymbol(exp2.getId()).getType().getName());
+	if (exp2.getTipo() == null){
+		semanticErrorManager.semanticFatalError("Error en la comparación menorque entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp2.getValor() + " no existe");
 	}
 	
 	if (exp1.getTipo().equals("ENTERO") && exp2.getTipo().equals("ENTERO")){
 		Expresion ex = new Expresion("LOGICO", null);
 		RESULT = ex;
 	} else {
-		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
+		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación menorque. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
 	}
 :} 
 |  expresion:exp1 IGUALDAD expresion:exp2
 {: 
-	if (exp1.getTipo().equals("IDEN")){
-		exp1.setTipo(scopeManager.searchSymbol(exp1.getId()).getType().getName());
+	if (exp1.getTipo() == null){
+		semanticErrorManager.semanticFatalError("Error en la igualdad entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp1.getValor() + " no existe");
 	}
 	
-	if (exp2.getTipo().equals("IDEN")){
-		exp2.setTipo(scopeManager.searchSymbol(exp2.getId()).getType().getName());
+	if (exp2.getTipo() == null){
+		semanticErrorManager.semanticFatalError("Error en la igualdad entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp2.getValor() + " no existe");
 	}
 
 	//Si los dos tipos son enteros
@@ -587,17 +619,24 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 		Expresion ex = new Expresion("LOGICO", null);
 		RESULT = ex;
 	} else {
-		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
+		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de igualdad. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
 	}
 
 :} 
 | IDEN:id
 {: 
-	Expresion ex = new Expresion("IDEN", null);
-	ex.setId(id.getLexema());	
-	RESULT = ex;
+	Expresion exp = new Expresion(null, id.getLexema());
+	//Si contiene el símbolo poner el tipo...(contains)
+	if(scopeManager.containsSymbol(id.getLexema())){
+		//Poner el tipo
+		exp.setTipo(scopeManager.searchSymbol(id.getLexema()).getType().getName());
+	}	
+	RESULT = exp;
 :}  
-| llamadafuncion 
+| llamadafuncion:exp
+{: 
+	RESULT = exp;
+:} 
 | CIERTO
 {: 
 	Expresion ex = new Expresion("LOGICO", "true");
@@ -608,7 +647,10 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	Expresion ex = new Expresion("LOGICO", "false");
 	RESULT = ex;
 :}   
-| miembrovector 
+| miembrovector:exp 
+{:
+	RESULT = exp;
+:}
 | NUM:num
 {: 
 	Expresion ex = new Expresion("ENTERO", num.getLexema());
@@ -620,12 +662,14 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :} ;
 expresionlvl2 ::=  expresion:exp1 SUMA expresion:exp2 
 {:
-	if (exp1.getTipo().equals("IDEN")){
-		exp1.setTipo(scopeManager.searchSymbol(exp1.getId()).getType().getName());
+	if (exp1.getTipo() == null){
+		semanticErrorManager.semanticFatalError("Error en la suma entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp1.getValor() + " no existe");
 	}
 	
-	if (exp2.getTipo().equals("IDEN")){
-		exp2.setTipo(scopeManager.searchSymbol(exp2.getId()).getType().getName());
+	if (exp2.getTipo() == null){
+		semanticErrorManager.semanticFatalError("Error en la suma entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp2.getValor() + " no existe");
 	}
 
 	//Si los dos tipos son enteros
@@ -633,7 +677,7 @@ expresionlvl2 ::=  expresion:exp1 SUMA expresion:exp2
 		Expresion ex = new Expresion("ENTERO", null);
 		RESULT = ex;
 	} else {
-		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
+		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de suma. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
 	}
 :}
 | expresionlvl3:exp
@@ -643,12 +687,12 @@ expresionlvl2 ::=  expresion:exp1 SUMA expresion:exp2
 
 expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 {:
-	if (exp1.getTipo().equals("IDEN")){
-		exp1.setTipo(scopeManager.searchSymbol(exp1.getId()).getType().getName());
+	if (exp1.getTipo() == null){
+		exp1.setTipo(scopeManager.searchSymbol(exp1.getValor()).getType().getName());
 	}
 	
-	if (exp2.getTipo().equals("IDEN")){
-		exp2.setTipo(scopeManager.searchSymbol(exp2.getId()).getType().getName());
+	if (exp2.getTipo() == null){
+		exp2.setTipo(scopeManager.searchSymbol(exp2.getValor()).getType().getName());
 	}
 	
 	if (exp1.getTipo().equals("LOGICO") && exp2.getTipo().equals("LOGICO")){
@@ -660,12 +704,12 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 :} 
 |  expresion:exp1 PRODUCTO expresion:exp2 
 {:
-	if (exp1.getTipo().equals("IDEN")){
-		exp1.setTipo(scopeManager.searchSymbol(exp1.getId()).getType().getName());
+	if (exp1.getTipo() == null){
+		exp1.setTipo(scopeManager.searchSymbol(exp1.getValor()).getType().getName());
 	}
 	
-	if (exp2.getTipo().equals("IDEN")){
-		exp2.setTipo(scopeManager.searchSymbol(exp2.getId()).getType().getName());
+	if (exp2.getTipo() == null){
+		exp2.setTipo(scopeManager.searchSymbol(exp2.getValor()).getType().getName());
 	}
 
 	//Si los dos tipos son enteros
@@ -673,7 +717,7 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 		Expresion ex = new Expresion("ENTERO", null);
 		RESULT = ex;
 	} else {
-		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
+		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de producto. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
 	}
 :}
 | expresionlvl4:exp
@@ -683,8 +727,8 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 
 expresionlvl4 ::= NOLOGICO  expresion:exp
 {:
-	if (exp.getTipo().equals("IDEN")){
-		exp.setTipo(scopeManager.searchSymbol(exp.getId()).getType().getName());
+	if (exp.getTipo() == null){
+		exp.setTipo(scopeManager.searchSymbol(exp.getValor()).getType().getName());
 	}
 	
 	if (exp.getTipo().equals("LOGICO")){
@@ -692,7 +736,10 @@ expresionlvl4 ::= NOLOGICO  expresion:exp
 	} else {
 		semanticErrorManager.semanticFatalError("Error en la negación. La expresion negada no es de tipo lógico");
 	}
-:} | expresionlvl5;
+:} | expresionlvl5:exp
+{:
+	RESULT = exp;
+:};
 
 expresionlvl5 ::= PIZQUIERDO expresion:exp PDERECHO
 {:
@@ -700,15 +747,21 @@ expresionlvl5 ::= PIZQUIERDO expresion:exp PDERECHO
 :} 
 | CIZQUIERDO expresion:exp CDERECHO
 {:
+	System.out.println("Estoy en Corchetes " + exp);
 	RESULT = exp;
 :};
 
 // Acceso a vectores
+//v1[2]
 miembrovector::= IDEN:id CIZQUIERDO valorango:valor CDERECHO
 {: 
-	Expresion ex = new Expresion("VECTOR", id.getLexema());
-	ex.setRango(valor.getValor());
-	RESULT = ex;
+	if(scopeManager.searchSymbol(id.getLexema()) == null) {
+		semanticErrorManager.semanticFatalError("El vector " + id.getLexema() + " no está declarado");	
+	} else {
+		TypeArray array = (TypeArray) scopeManager.searchSymbol(id.getLexema()).getType(); 	
+		Expresion ex = new Expresion (array.getTipo(), id.getLexema());
+		RESULT = ex;
+	}
 :};
  
 /*--------------------------------------------------------------------------*/
@@ -719,20 +772,28 @@ miembrovector::= IDEN:id CIZQUIERDO valorango:valor CDERECHO
 // Sentencias de asignacion
 parteizquierdaasignacion ::= IDEN:id
 {:
-	Expresion ex = new Expresion (scopeManager.searchSymbol(id.getLexema()).getType().getName(), null);
-	ex.setId(id.getLexema());
-	RESULT = ex;
+	if(scopeManager.searchSymbol(id.getLexema()) == null) {
+		semanticErrorManager.semanticFatalError("La referencia " + id.getLexema() + " no está declarada");	
+	} else {
+		Expresion ex = new Expresion (scopeManager.searchSymbol(id.getLexema()).getType().getName(), id.getLexema());
+		RESULT = ex;
+	}
+	
 :}  
-|miembrovector;
+|miembrovector:exp
+{:
+	RESULT = exp;	
+:};
 
 sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasignacion:exp DSENTENCIAS
 {:
 	ScopeIF scope = scopeManager.getCurrentScope();
 	//Comprobación que la referencia existe en las tablas de símbolos de los ámbitos abiertos 
 	//y que es una variable o parámetro de subprograma
-	if((scopeManager.containsSymbol(ref.getId()))&&((scopeManager.searchSymbol(ref.getId())instanceof SymbolVariable) || (scopeManager.searchSymbol(ref.getId())instanceof SymbolParameter))){
+	if((scopeManager.containsSymbol(ref.getValor()))&&((scopeManager.searchSymbol(ref.getValor())instanceof SymbolVariable) || (scopeManager.searchSymbol(ref.getValor())instanceof SymbolParameter))){
 		if(ref.getTipo().equals(exp.getTipo())){
-			System.out.println("Tipos correctos en la asignación");					
+			Sentencia s = new Sentencia();
+			RESULT = s;				
 		} else {
 			semanticErrorManager.semanticFatalError("El tipo de " +ref.getValor()+ " y de " +exp.getValor()+" son incompatibles");
 		}
@@ -743,43 +804,185 @@ sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasign
 
 parametroasignacion ::= expresion:ex
 {:
-	if (ex.getTipo().equals("IDEN")){
-		ex.setTipo(scopeManager.searchSymbol(ex.getId()).getType().getName());
-		RESULT = ex;
+	if (ex.getTipo() == null){
+		semanticErrorManager.semanticFatalError("El parametro de asignacion " + ex.getValor()+ " no está declarada");
 	} else {
 		RESULT = ex;
 	}
 :};
 
 // Llamada a función
-parametrofuncionoproc ::= listavariables;
-llamadafuncion ::= IDEN PIZQUIERDO parametrofuncionoproc PDERECHO;  
+parametrofuncionoproc ::= listavariables:lista
+{:
+	RESULT = lista;
+:};
+
+//ejFuncion (x)
+llamadafuncion ::= IDEN:id PIZQUIERDO parametrofuncionoproc:parametros PDERECHO
+{:
+	TypeProcedure funcion = (TypeProcedure) (scopeManager.searchType(id.getLexema()));
+
+	if (funcion.getListaParametros().size() == parametros.size()){	
+		for (int i = 0; i < parametros.size(); i++) {
+			if(parametros.getListaVariables().get(i).getTipo() == null){
+				parametros.getListaVariables().get(i).setTipo(scopeManager.searchSymbol(parametros.getListaVariables().get(i).getValor()).getType().getName());
+			}
+
+			if(funcion.getListaParametros().get(i).getType().getName() == parametros.getListaVariables().get(i).getTipo()){
+				Expresion ex = new Expresion();
+				RESULT = ex;
+			} else {
+				semanticErrorManager.semanticFatalError("Los tipos de los parámetros en la llamada a " + id.getLexema() + " no coinciden: tipo en la llamada: " 
+				+ parametros.getListaVariables().get(i).getTipo() + " tipo requerido: " + funcion.getListaParametros().get(i).getType().getName());
+			}	
+		}
+		
+	} else {
+		semanticErrorManager.semanticFatalError("El número de los parámetros es diferente de los esperados, esperados: " + funcion.getListaParametros().size() + " introducidos " + parametros.size());
+	}
+:}; 
+ 
 sentenciallamadafuncion ::= llamadafuncion DSENTENCIAS;
 
 
 // Sentencias
-sentencia ::= sentenciadeasignacion | sentenciaif | sentenciafor | sentenciaEscribir | sentenciallamadafuncion ;
-sentenciaFuncion ::= sentenciadeasignacion | sentenciaifFuncion | sentenciaforFuncion | sentenciaEscribir | sentenciallamadafuncion | sentenciaDevolver;
+sentencia ::= sentenciadeasignacion
+| sentenciaif
+| sentenciafor
+| sentenciaEscribir
+| sentenciallamadafuncion;
+
+sentenciaFuncion ::= sentenciadeasignacion
+| sentenciaifFuncion:siff 
+{:	
+	RESULT = siff;
+:}
+| sentenciaforFuncion
+| sentenciaEscribir:sef
+{:	
+	RESULT = sef;
+:}
+| sentenciallamadafuncion
+| sentenciaDevolver:sd
+{:	
+	RESULT = sd;
+:};
+
 listaSentencias ::= sentencia  listaSentencias | epsilon;
-listaSentenciasFuncion ::= sentenciaFuncion listaSentenciasFuncion | epsilon;
+
+listaSentenciasFuncion ::= sentenciaFuncion:sf listaSentenciasFuncion:lsf
+{:
+	ListaSentencias lista = new ListaSentencias();
+	
+	if (lsf == null){
+		lista.addSentencia(sf);
+		RESULT = lista;
+	} else {
+		lsf.setListaSentencias(lsf.getListaSentencias());
+		lsf.addSentencia(sf);
+		RESULT = lsf;
+	}
+	
+:} | epsilon;
 
 // if
-sentenciaif ::= COMIENZOSI expresion  STARTIF DELIMFUNC listaSentencias rellenoif  FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS ;
-sentenciaifFuncion ::= COMIENZOSI expresion  STARTIF DELIMFUNC listaSentenciasFuncion rellenoifFuncion  FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS ;
+sentenciaif ::= COMIENZOSI expresion:exp STARTIF DELIMFUNC listaSentencias rellenoif FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS
+{:	
+	if(exp.getTipo().equals("LOGICO")){
+		Sentencia s = new Sentencia();
+		RESULT = s;
+	} else {
+		semanticErrorManager.semanticFatalError("Error en la expresión, debe ser de tipo lógico y es de tipo: " + exp.getTipo());
+	}
+	
+:};
+sentenciaifFuncion ::= COMIENZOSI expresion:exp  STARTIF DELIMFUNC listaSentenciasFuncion rellenoifFuncion  FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS 
+{:	
+	if(exp.getTipo().equals("LOGICO")){
+		Sentencia s = new Sentencia();
+		RESULT = s;
+	} else {
+		semanticErrorManager.semanticFatalError("Error en la expresión, debe ser de tipo lógico y es de tipo: " + exp.getTipo());
+	}
+:};
+
 rellenoifFuncion ::=  ALTERNATIVASI DELIMFUNC  listaSentenciasFuncion | epsilon ;
 rellenoif ::=  ALTERNATIVASI DELIMFUNC  listaSentencias | epsilon ;
 
 // for 
-sentenciafor ::= COMIENZOBUCLEPARA IDEN RANGOBUCLEPARA expresion RANGO expresion DELIMFUNC listaSentencias FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS;
-sentenciaforFuncion ::= COMIENZOBUCLEPARA IDEN RANGOBUCLEPARA expresion RANGO expresion DELIMFUNC listaSentenciasFuncion FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS;
+sentenciafor ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 RANGO expresion:exp2 DELIMFUNC listaSentencias FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS
+{:
+	if(scopeManager.containsSymbol(id.getLexema())){
+		if(scopeManager.searchSymbol(id.getLexema()).getType().getName() == "ENTERO"){
+			if (exp1.getTipo() == "ENTERO" && exp2.getTipo() == "ENTERO"){
+				Sentencia s = new Sentencia();
+				RESULT = s;
+			} else {
+				semanticErrorManager.semanticFatalError("Error en los tipos de las expresiones. El tipo de la expresion de comienzo es " + exp1.getTipo() + " y el de la final es " + exp2.getTipo());
+			}
+		} else {
+			semanticErrorManager.semanticFatalError("El tipo del índice " + id.getLexema() + " no es ENTERO, es de tipo " + scopeManager.searchSymbol(id.getLexema()).getType().getName());
+		}
+	} else {
+		semanticErrorManager.semanticFatalError("El índice " + id.getLexema() + " no está declarado");
+	}
+:};
+sentenciaforFuncion ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 RANGO expresion:exp2 DELIMFUNC listaSentenciasFuncion FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS
+{:
+	if(scopeManager.containsSymbol(id.getLexema())){
+		if(scopeManager.searchSymbol(id.getLexema()).getType().getName() == "ENTERO"){
+			if (exp1.getTipo() == "ENTERO" && exp2.getTipo() == "ENTERO"){
+				Sentencia s = new Sentencia();
+				RESULT = s;
+			} else {
+				semanticErrorManager.semanticFatalError("Error en los tipos de las expresiones. El tipo de la expresion de comienzo es " + exp1.getTipo() + " y el de la final es " + exp2.getTipo());
+			}
+		} else {
+			semanticErrorManager.semanticFatalError("El tipo del índice " + id.getLexema() + " no es ENTERO, es de tipo " + scopeManager.searchSymbol(id.getLexema()).getType().getName());
+		}
+	} else {
+		semanticErrorManager.semanticFatalError("El índice " + id.getLexema() + " no está declarado");
+	}
+:};
 
 
 // Escribir 
-parametroEscribir ::= STRING | expresion | epsilon ;
-sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir PDERECHO DSENTENCIAS;
+parametroEscribir ::= STRING:string
+{:
+	Expresion exp = new Expresion ("STRING" , string.getLexema());
+	RESULT = exp;
+	
+:} 
+| expresion:exp
+{:
+	RESULT = exp;
+:}
+ | epsilon:ep
+ {:
+ 	Expresion exp = new Expresion("STRING" , null);
+ 	RESULT = exp;
+ :};
+sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO DSENTENCIAS
+{:	
+	if (parametro.getTipo() == null) {
+		semanticErrorManager.semanticFatalError("El parametro " + parametro.getValor() + " no está declarado");
+	} else {	
+		if (parametro.getTipo().equals("STRING") || parametro.getTipo().equals("ENTERO")){
+				Sentencia s = new Sentencia();
+				RESULT = s;
+		} else {
+			semanticErrorManager.semanticFatalError("Error en el parametro de tipo " + parametro.getTipo() + " de la sentencia escribir");
+		}
+	}
+:};
 
 // Devolver
-sentenciaDevolver ::= FRETURN expresion DSENTENCIAS;
+sentenciaDevolver ::= FRETURN expresion:exp DSENTENCIAS
+{:
+	Sentencia s = new Sentencia();
+	s.setTipo(exp.getTipo());
+	RESULT = s;
+:};
 
 
 
