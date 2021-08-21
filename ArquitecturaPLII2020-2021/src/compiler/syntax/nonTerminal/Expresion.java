@@ -1,7 +1,12 @@
 package compiler.syntax.nonTerminal;
 
+import java.util.List;
+
+import es.uned.lsi.compiler.intermediate.QuadrupleIF;
+
 public class Expresion extends NonTerminal{
 	
+	private List<QuadrupleIF> code;
 	private String tipo;
 	private String valor;
 	private String rango;
@@ -17,6 +22,14 @@ public class Expresion extends NonTerminal{
 		this.valor = valor;
 	}
 	
+	public List<QuadrupleIF> getCode() {
+		return code;
+	}
+
+	public void setCode(List<QuadrupleIF> code) {
+		this.code = code;
+	}
+
 	public String getRango() {
 		return rango;
 	}

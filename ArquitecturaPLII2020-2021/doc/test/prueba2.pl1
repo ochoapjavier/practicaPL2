@@ -1,34 +1,15 @@
 programa uno:
-
 constantes
 		a = 10;
 		b = cierto;
-tipos 
-	TipoVector = vector [1..a] de entero;
+		
 	
 variables
-	x, z : entero;
-	abierto : booleano;
-	v1, v2 : TipoVector;
+	x: entero;
 		
-subprogramas
-
-	funcion fun1():entero:
-	  			
-		comienzo
-		
-			si (10 < a) entonces:
-				escribir("a es mayor que b");
-			sino:
-				escribir("a y b son iguales");
-			fin si;
-			
-			devolver 1;
-		fin;
-
-
-
 comienzo
-	
+	x = 5;
+	x = 10;
+	x = b;
 
 fin.

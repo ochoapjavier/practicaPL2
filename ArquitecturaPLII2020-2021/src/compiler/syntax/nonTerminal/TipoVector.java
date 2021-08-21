@@ -1,7 +1,14 @@
 package compiler.syntax.nonTerminal;
 
+import java.util.List;
+
+import es.uned.lsi.compiler.intermediate.QuadrupleIF;
+import es.uned.lsi.compiler.semantic.type.TypeIF;
+
 public class TipoVector extends NonTerminal{
 	
+	private List<QuadrupleIF> code;
+	private TypeIF type;
 	private String tipo;
 
 	public TipoVector() {

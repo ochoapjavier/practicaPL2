@@ -117,7 +117,7 @@ non terminal SecuenciaVariables	seccionvariables;
 non terminal  					defsubprograma;
 non terminal					puntoycomaopcional;
 
-non terminal 					tiporetornofuncion;
+non terminal Var				tiporetornofuncion;
 non terminal  					seccionsubprograma;
 non terminal  					defprincipal;
 non terminal Var				selectorvalororeferencia;
@@ -133,7 +133,7 @@ non terminal Expresion			expresionlvl5;
 
 
 non terminal Expresion			miembrovector;
-non terminal					procedimiento;
+non terminal 					procedimiento;
 non terminal					funcion;
 non terminal					selectorpof;
 
@@ -226,38 +226,40 @@ DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COM
 
 //Definición de constantes
 defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS {:
-	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de sï¿½mbolos
+	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de símbolos
 	ScopeIF scope = scopeManager.getCurrentScope();
 	SymbolTableIF symTable = scope.getSymbolTable();
 	
 	//Comprobamos que la constante no este ya contenida en la tabla de símmbolos
 	if(symTable.containsSymbol(id.getLexema())){
-		semanticErrorManager.semanticFatalError("Constante " +id.getLexema() + " en linea " + id.getLine() + " ya declarada");
+		semanticErrorManager.semanticFatalError("Error en la declaracion de constantes en la linea " + id.getLine() + ". Simbolo " +id.getLexema() + " ya declarado");
 	} else {
 		//Introducimos en la tabla de símbolos la constante con su ámbito, nombre, tipo y valor
-		TypeTableIF typeTable = scope.getTypeTable();
-		TypeIF tipo = scopeManager.searchType(valor.getTipo());
-		
-		SymbolConstant simboloConstante = new SymbolConstant(scope, id.getLexema(), tipo);
+		SymbolConstant simboloConstante = new SymbolConstant(scope, id.getLexema(), valor.getType());
 		simboloConstante.setValor(valor.getValor());
 		symTable.addSymbol(simboloConstante);	
 	}
 :} defconstantes 
 | epsilon;
- 
+
+//Devuelve un objeto constante con el campo type y el valor
 valorconstante ::=   FALSO 
 {:
-	Constante c = new Constante("LOGICO", "false");
+	Constante c = new Constante(scopeManager.searchType("LOGICO"), "false");
 	RESULT = c;							
 :} 
 | CIERTO 
 {:
-	Constante c = new Constante("LOGICO", "true");
+	Constante c = new Constante(scopeManager.searchType("LOGICO"), "true");
+	System.out.println(scopeManager.searchType("LOGICO"));
+	System.out.println(c);
 	RESULT = c;							
 :}
 | NUM:n
 {:
-	Constante c = new Constante("ENTERO", n.getLexema());
+	Constante c = new Constante(scopeManager.searchType("ENTERO"), n.getLexema());
+	System.out.println(scopeManager.searchType("ENTERO"));
+	System.out.println(c);
 	RESULT = c;							
 :};
 
@@ -273,7 +275,7 @@ deftipos ::=IDEN:id ASIGNACION DECLVECTOR CIZQUIERDO valorango:v1 RANGO valorang
 {:
 	if (Integer.parseInt(v1.getValor()) > Integer.parseInt(v2.getValor())) {
 		//Dar error
-		semanticErrorManager.semanticFatalError("Error fatal, parametros equivocados en el rango del vector");
+		semanticErrorManager.semanticFatalError("Error en la definición de tipos, parametros equivocados en el rango del vector");
 	} else {
 		//CREAR VECTOR CON PARAMETROS
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -509,13 +511,16 @@ PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubpro
 
 
 tiporetornofuncion ::= IDEN:id
-{:
-	RESULT = id.getLexema();
+{:	
+	Var v = new Var(id.getLexema(), null);
+	RESULT = v;
 :} 
 | tipovector:tv
 {:
-	RESULT = tv.getTipo();
+	Var v = new Var(tv.getTipo(), null);
+	RESULT = v;
 :};
+
 /*funcion funcion():entero:
 	  			
 		comienzo
@@ -542,7 +547,7 @@ funcion ::= DECLAREFUNCION IDEN:id
 		ScopeIF scopeF = scopeManager.openScope (id.getLexema());
     }	
 :} 
-PIZQUIERDO defvariables:lista
+PIZQUIERDO defvariables:lista PDERECHO DELIMFUNC tiporetornofuncion:tipo 
 {:
 	//Si la lista no está vacía
 	if (lista != null){
@@ -564,11 +569,12 @@ PIZQUIERDO defvariables:lista
 				
 				TypeFunction funcion = (TypeFunction)scopeManager.searchType(scope.getName());
 				funcion.addParametro(parametro);
+				funcion.setRetorno(tipo.getTipo());
 			}		
 		}
 	}
 :}  
-PDERECHO DELIMFUNC tiporetornofuncion:tipo DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion:s listaSentenciasFuncion:ls FINBLOQUESENTENCIAS DSENTENCIAS
+DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO sentenciaFuncion:s listaSentenciasFuncion:ls FINBLOQUESENTENCIAS DSENTENCIAS
 {:
 	scopeManager.closeScope();
 :};
@@ -625,6 +631,7 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :} 
 | IDEN:id
 {: 
+	System.out.println (" Estoy en expresion/id ");
 	Expresion exp = new Expresion(null, id.getLexema());
 	//Si contiene el símbolo poner el tipo...(contains)
 	if(scopeManager.containsSymbol(id.getLexema())){
@@ -747,7 +754,6 @@ expresionlvl5 ::= PIZQUIERDO expresion:exp PDERECHO
 :} 
 | CIZQUIERDO expresion:exp CDERECHO
 {:
-	System.out.println("Estoy en Corchetes " + exp);
 	RESULT = exp;
 :};
 
@@ -787,6 +793,7 @@ parteizquierdaasignacion ::= IDEN:id
 
 sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasignacion:exp DSENTENCIAS
 {:
+	System.out.println(" Estoy en ASIGNACIÓN, REF = " + ref + ", EXP = " + exp );
 	ScopeIF scope = scopeManager.getCurrentScope();
 	//Comprobación que la referencia existe en las tablas de símbolos de los ámbitos abiertos 
 	//y que es una variable o parámetro de subprograma
@@ -829,17 +836,18 @@ llamadafuncion ::= IDEN:id PIZQUIERDO parametrofuncionoproc:parametros PDERECHO
 			}
 
 			if(funcion.getListaParametros().get(i).getType().getName() == parametros.getListaVariables().get(i).getTipo()){
-				Expresion ex = new Expresion();
-				RESULT = ex;
+				System.out.println("Estoy en llamadafuncion");
 			} else {
 				semanticErrorManager.semanticFatalError("Los tipos de los parámetros en la llamada a " + id.getLexema() + " no coinciden: tipo en la llamada: " 
 				+ parametros.getListaVariables().get(i).getTipo() + " tipo requerido: " + funcion.getListaParametros().get(i).getType().getName());
 			}	
-		}
-		
+		}		
 	} else {
 		semanticErrorManager.semanticFatalError("El número de los parámetros es diferente de los esperados, esperados: " + funcion.getListaParametros().size() + " introducidos " + parametros.size());
 	}
+	TypeFunction fun = (TypeFunction) scopeManager.searchType(id.getLexema());
+	Expresion ex = new Expresion(fun.getRetorno(), null);
+	RESULT = ex;
 :}; 
  
 sentenciallamadafuncion ::= llamadafuncion DSENTENCIAS;

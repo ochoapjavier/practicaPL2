@@ -3,25 +3,25 @@
 	  constantes
 	  		A = 10;
 	  		B = 20;
-	  		C = 8;
+	  		C = falso;
 	  		#C = cierto;						
 	  		D = cierto;
 	  		#E = ;							
 	  tipos
 	  		tipo1 = vector [1..A] de entero;
-	  		tipo2 = vector [1..C] de booleano; 
+	  		#tipo2 = vector [1..C] de booleano; 
 	  		tipo3 = vector [1..20] de booleano;
 	  		
 	  variables
 	  		var1:booleano;
 	  		var2:tipo1;
-			#var3:hola;
+	  		#var3:hola;				
 	  
 	  	subprogramas
 	  		funcion fun1():entero:
 	  			
 	  			comienzo
-	  				devolver cierto;
+	  				devolver 1;
 	  			fin;
 	  		funcion fun2(a : entero):booleano:
 		  			
@@ -37,11 +37,11 @@
 	  			fin;
 	  comienzo
 	  	escribir("hola mundo");  	
-		escribir(10);					
+		#escribir(10);					
 	
-		#si (10 == A);					
+		#si (var7 == var8);					
 		#si ;								
-		si (9==1) entonces:
+		si (var1==1) entonces:
 		fin si;							
 		
 		si (2==2) entonces: var1=cierto; sino: var1=cierto; fin si;
