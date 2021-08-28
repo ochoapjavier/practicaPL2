@@ -3,10 +3,12 @@ package compiler.syntax.nonTerminal;
 import java.util.List;
 
 import es.uned.lsi.compiler.intermediate.QuadrupleIF;
+import es.uned.lsi.compiler.semantic.type.TypeIF;
 
 public class Expresion extends NonTerminal{
 	
 	private List<QuadrupleIF> code;
+	private TypeIF type;
 	private String tipo;
 	private String valor;
 	private String rango;
@@ -16,12 +18,26 @@ public class Expresion extends NonTerminal{
 		super();
 	}
 	
+	public Expresion(TypeIF type, String valor) {
+		super();
+		this.type = type;
+		this.valor = valor;
+	}
+	
 	public Expresion(String tipo, String valor) {
 		super();
 		this.tipo = tipo;
 		this.valor = valor;
 	}
 	
+	public TypeIF getType() {
+		return type;
+	}
+
+	public void setType(TypeIF type) {
+		this.type = type;
+	}
+
 	public List<QuadrupleIF> getCode() {
 		return code;
 	}
@@ -63,6 +79,6 @@ public class Expresion extends NonTerminal{
 	}
 	
 	public String toString(){
-		return "Expresion[type:" + this.tipo+" value:" + this.valor+" id:"+this.id+"]";
+		return "Expresion[type:" + this.type+" value:" + this.valor+" id:"+this.id+"]";
 	}
 }

@@ -61,6 +61,6 @@ public class Constante extends NonTerminal{
 	}
 	
 	public String toString(){
-		return "Constante[type:" + this.tipo+" value:" + this.valor+"]";
+		return "Constante[type:" + this.type+" value:" + this.valor+"]";
 	}
 }

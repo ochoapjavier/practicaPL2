@@ -252,14 +252,14 @@ valorconstante ::=   FALSO
 {:
 	Constante c = new Constante(scopeManager.searchType("LOGICO"), "true");
 	System.out.println(scopeManager.searchType("LOGICO"));
-	System.out.println(c);
+	System.out.println(c.getType());
 	RESULT = c;							
 :}
 | NUM:n
 {:
 	Constante c = new Constante(scopeManager.searchType("ENTERO"), n.getLexema());
 	System.out.println(scopeManager.searchType("ENTERO"));
-	System.out.println(c);
+	System.out.println(c.getType());
 	RESULT = c;							
 :};
 
@@ -306,9 +306,11 @@ tipovector ::= BOOLEANO
 :};
 
 //[3]
-valorango ::= NUM:r 
+valorango ::= NUM:n
 {: 
-	Constante c = new Constante("ENTERO", r.getLexema());
+	Constante c = new Constante(scopeManager.searchType("ENTERO"), n.getLexema());
+	System.out.println(scopeManager.searchType("ENTERO"));
+	System.out.println(c);
 	RESULT = c;	
 :} 
 
@@ -323,9 +325,9 @@ valorango ::= NUM:r
 		SymbolIF simbolo = scopeManager.searchSymbol(r.getLexema());
 		if (simbolo instanceof SymbolConstant) {
 			SymbolConstant constante = (SymbolConstant) simbolo;
-			if (simbolo.getType().getName().toString().equals("ENTERO")) {
-				Constante c = new Constante("ENTERO", constante.getValor());
-				RESULT = c;	
+			if (simbolo.getType().getName().toString().equals("ENTERO")) {		
+				Constante c = new Constante(scopeManager.searchType("ENTERO"), constante.getValor());
+				RESULT = c;				
 			} else {
 				semanticErrorManager.semanticFatalError("Error fatal, el simbolo "+r.getLexema()+" no es de tipo ENTERO, necesario para el vector");
 			}
@@ -350,16 +352,19 @@ secciontipos ::= COMIENZODECLTIPOS deftipos | epsilon;
 // Definición de variables
 tipovariable ::= BOOLEANO 
 {: 
-	Var v = new Var("LOGICO");
+	System.out.println("Estoy en tipovariable BOOLEANO");
+	Var v = new Var(scopeManager.searchType("LOGICO"));
 	RESULT = v;
 :} 
 | ENTERO 
 {: 
-	Var v = new Var("ENTERO");
+	System.out.println("Estoy en tipovariable ENTERO");
+	Var v = new Var(scopeManager.searchType("ENTERO"));
 	RESULT = v;
 :} 
 | IDEN:r
-{: 
+{: 	
+	System.out.println("Estoy en tipovariable IDEN");
 	Var v = new Var(r.getLexema());
 	RESULT = v;
 :} ;
@@ -367,16 +372,19 @@ tipovariable ::= BOOLEANO
 //x, z : entero;
 defvariables ::= listavariables:listaFila DELIMFUNC tipovariable:tipo puntoycomaopcional defvariables:listaAcum 
 {:
+	System.out.println("Estoy en defvariables");
 	SecuenciaVariables sv = new SecuenciaVariables();	
 	if (listaAcum == null){
 		for (int i = 0; i < listaFila.size(); i++) {
-			listaFila.getVariable(i).setTipo(tipo.getTipo());
+			System.out.println("DEFVAR variable" + listaFila.getVariable(i) + " tipo: " + tipo);
+			listaFila.getVariable(i).setType(tipo.getType());
+			System.out.println("Seteo tipo de variable... " + listaFila.getVariable(i));
 			sv.addVariable(listaFila.getVariable(i));
 		}	
 	} else {
 		sv.setListaVariables(listaAcum.getListaVariables());
 		for (int i = 0; i < listaFila.size(); i++) {
-			listaFila.getVariable(i).setTipo(tipo.getTipo());
+			listaFila.getVariable(i).setType(tipo.getType());
 			sv.addVariable(listaFila.getVariable(i));
 		}
 	}
@@ -410,14 +418,16 @@ selectorvalororeferencia ::=  PARAMETROVALOR IDEN:id
 :}
 |expresion:ex
 {:
+	System.out.println("Estoy en expresion de selector valor referencia" + ex);
 	//Si el tipo es null (es de tipo IDEN)
-	if(ex.getTipo() == null){
+	if(ex.getType() == null){
 		ScopeIF scope = scopeManager.getCurrentScope();
 		SymbolTableIF symTable = scope.getSymbolTable();
 		Var var  = new Var (null, ex.getValor());
+		System.out.println("La variable creada en SVR/exp es " + var);
 		RESULT = var;			
 	} else {
-		Var var = new Var (ex.getTipo(), ex.getValor());
+		Var var = new Var (ex.getType(), ex.getValor());
 		RESULT = var;
 	}
 :};
@@ -429,19 +439,25 @@ seccionvariables ::= DECLVARIABLES defvariables:lista
 		ScopeIF scope = scopeManager.getCurrentScope();
 		SymbolTableIF symTable = scope.getSymbolTable();		
 		
+		System.out.println("Estoy en SECCVAR " + lista.getVariable(i));
+		System.out.println("Estoy en SECCVAR " + lista.getVariable(i).getType());
+		System.out.println("Estoy en SECCVAR " + lista.getVariable(i).getValor());
+		
 		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
-		if(symTable.containsSymbol(lista.getVariable(i).getId())){
+		if(symTable.containsSymbol(lista.getVariable(i).getValor())){
 			semanticErrorManager.semanticFatalError("Variable " + lista.getVariable(i).getValor() + " ya declarada");
 		} else {				
 			//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
-			TypeTableIF typeTable = scope.getTypeTable();
-			TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());	
+			/*TypeTableIF typeTable = scope.getTypeTable();
 			
-			if (type == null) {
+			TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());	*/
+			
+			if (lista.getVariable(i).getType() == null) {
 				semanticErrorManager.semanticFatalError("Error al declarar la variable " + lista.getVariable(i).getValor() + " el tipo " 
 				+ lista.getVariable(i).getTipo() + " no existe");
 			} else {
-				SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getValor(), type);
+				SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getValor(), lista.getVariable(i).getType());
+				System.out.println(simboloVariable);
 				symTable.addSymbol(simboloVariable);
 			}			
 		}		
@@ -512,13 +528,13 @@ PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubpro
 
 tiporetornofuncion ::= IDEN:id
 {:	
-	Var v = new Var(id.getLexema(), null);
-	RESULT = v;
+	//Var v = new Var(id.getLexema(), id.getLexema());
+	//RESULT = v;
 :} 
 | tipovector:tv
 {:
-	Var v = new Var(tv.getTipo(), null);
-	RESULT = v;
+	//Var v = new Var(tv.getTipo(), null);
+	//RESULT = v;
 :};
 
 /*funcion funcion():entero:
@@ -631,14 +647,17 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :} 
 | IDEN:id
 {: 
-	System.out.println (" Estoy en expresion/id ");
-	Expresion exp = new Expresion(null, id.getLexema());
-	//Si contiene el símbolo poner el tipo...(contains)
+	//Creación objeto expresion
+	Expresion exp = new Expresion();
+	//Setea el valor
+	exp.setValor(id.getLexema());
+	
+	//Si el símbolo existe
 	if(scopeManager.containsSymbol(id.getLexema())){
 		//Poner el tipo
-		exp.setTipo(scopeManager.searchSymbol(id.getLexema()).getType().getName());
-	}	
-	RESULT = exp;
+		exp.setType(scopeManager.searchSymbol(id.getLexema()).getType());
+	}			
+	RESULT = exp;		
 :}  
 | llamadafuncion:exp
 {: 
@@ -646,12 +665,16 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :} 
 | CIERTO
 {: 
-	Expresion ex = new Expresion("LOGICO", "true");
+	Expresion ex = new Expresion();
+	ex.setValor("true");
+	ex.setType(scopeManager.searchType("LOGICO"));
 	RESULT = ex;
 :}   
 | FALSO
 {: 
-	Expresion ex = new Expresion("LOGICO", "false");
+	Expresion ex = new Expresion();
+	ex.setValor("false");
+	ex.setType(scopeManager.searchType("LOGICO"));
 	RESULT = ex;
 :}   
 | miembrovector:exp 
@@ -660,7 +683,9 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :}
 | NUM:num
 {: 
-	Expresion ex = new Expresion("ENTERO", num.getLexema());
+	Expresion ex = new Expresion();
+	ex.setValor(num.getLexema());
+	ex.setType(scopeManager.searchType("ENTERO"));
 	RESULT = ex;
 :}    
 | expresionlvl2:exp
@@ -781,7 +806,7 @@ parteizquierdaasignacion ::= IDEN:id
 	if(scopeManager.searchSymbol(id.getLexema()) == null) {
 		semanticErrorManager.semanticFatalError("La referencia " + id.getLexema() + " no está declarada");	
 	} else {
-		Expresion ex = new Expresion (scopeManager.searchSymbol(id.getLexema()).getType().getName(), id.getLexema());
+		Expresion ex = new Expresion (scopeManager.searchSymbol(id.getLexema()).getType(), id.getLexema());
 		RESULT = ex;
 	}
 	
@@ -798,7 +823,7 @@ sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasign
 	//Comprobación que la referencia existe en las tablas de símbolos de los ámbitos abiertos 
 	//y que es una variable o parámetro de subprograma
 	if((scopeManager.containsSymbol(ref.getValor()))&&((scopeManager.searchSymbol(ref.getValor())instanceof SymbolVariable) || (scopeManager.searchSymbol(ref.getValor())instanceof SymbolParameter))){
-		if(ref.getTipo().equals(exp.getTipo())){
+		if(ref.getType().equals(exp.getType())){
 			Sentencia s = new Sentencia();
 			RESULT = s;				
 		} else {
@@ -811,7 +836,8 @@ sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasign
 
 parametroasignacion ::= expresion:ex
 {:
-	if (ex.getTipo() == null){
+	System.out.println("Estoy en el parámetro de la expresión " + ex.getValor() + " con type " + ex.getType());
+	if (ex.getType() == null){
 		semanticErrorManager.semanticFatalError("El parametro de asignacion " + ex.getValor()+ " no está declarada");
 	} else {
 		RESULT = ex;
