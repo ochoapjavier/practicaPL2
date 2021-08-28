@@ -686,6 +686,35 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	Expresion ex = new Expresion();
 	ex.setValor(num.getLexema());
 	ex.setType(scopeManager.searchType("ENTERO"));
+	System.out.println("Estoy en EXP/NUM " + num.getLexema());
+	
+	System.out.println("Iniciando código intermedio...");
+	
+	//Recuperamos el ámbito en el que nos encontramos
+	ScopeIF scope = scopeManager.getCurrentScope();
+	
+	//Creamos una factoría de temporales con su ámbito
+	TemporalFactory tf = new TemporalFactory(scope);
+	
+	//Instanciamos el constructor del código intermedio con su ámbito
+	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+	
+	//Creamos un nuevo temporal
+	TemporalIF temp = tf.create();
+	
+	//Creamos la cuadrupla que almacenará en un temporal el valor del entero
+	int numeroEntero = Integer.parseInt(num.getLexema());
+	cb.addQuadruple("MV", temp, numeroEntero);
+	
+	//Añadimos el temporal creado al objeto de la clase Expresion
+	ex.setTemporal(temp);
+	
+	//Añadimos el código intermedio generado al objeto de la clase Expresion
+	ex.setIntermediateCode(cb.create());
+	
+	//Printamos el código intermedio generado (opcional)
+	System.out.println("Codigo intermedio: " + ex.getIntermediateCode());
+	
 	RESULT = ex;
 :}    
 | expresionlvl2:exp
