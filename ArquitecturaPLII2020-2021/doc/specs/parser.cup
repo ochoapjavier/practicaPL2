@@ -803,6 +803,7 @@ miembrovector::= IDEN:id CIZQUIERDO valorango:valor CDERECHO
 // Sentencias de asignacion
 parteizquierdaasignacion ::= IDEN:id
 {:
+	//Si la parte izquierda de la asignación no existe, devolver error
 	if(scopeManager.searchSymbol(id.getLexema()) == null) {
 		semanticErrorManager.semanticFatalError("La referencia " + id.getLexema() + " no está declarada");	
 	} else {
