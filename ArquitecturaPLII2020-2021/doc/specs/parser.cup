@@ -946,7 +946,8 @@ expresionlvl4 ::= NOLOGICO  expresion:exp1
 	} else {
 		semanticErrorManager.semanticFatalError("Error en la negación. La expresion negada no es de tipo lógico");
 	}
-:} | expresionlvl5:exp
+:} 
+| expresionlvl5:exp
 {:
 	RESULT = exp;
 :};
@@ -1004,6 +1005,28 @@ sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasign
 	if((scopeManager.containsSymbol(ref.getValor()))&&((scopeManager.searchSymbol(ref.getValor())instanceof SymbolVariable) || (scopeManager.searchSymbol(ref.getValor())instanceof SymbolParameter))){
 		if(ref.getType().equals(exp.getType())){
 			Sentencia s = new Sentencia();
+			//Código intermedio
+			//Creamos una factoría de temporales con su ámbito
+			TemporalFactoryIF tF = new TemporalFactory(scope);
+			//Instanciamos el constructor del código intermedio con su ámbito
+			IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+			//Creamos un nuevo temporal
+			TemporalIF temp = tF.create();
+			//Recuperamos el temporal de la expresión
+			TemporalIF expTemp = exp.getTemporal();
+			//Añadimos la lista de cuadruplas de la expresión al nuevo constructor cb
+			cb.addQuadruples(exp.getIntermediateCode());
+			//Creamos una nueva Variable
+			SymbolIF sV = scopeManager.searchSymbol(ref.getValor());
+			Variable var = new Variable(ref.getValor(), sV.getScope());
+			//creamos la cuadrupla que almacenará en un temporal la variable creada
+			cb.addQuadruple("MVA", temp, var);
+			//creamos la cuadrupla que almacenará el valor del temporal de la expresión en el temporal de la variable.
+			cb.addQuadruple("STP", temp, expTemp);
+			//añadimos el código intermedio generado al objeto de la clase ExpresionAsignacion
+			s.setIntermediateCode(cb.create());
+			//printamos el código intermedio generado (opcional)
+			System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 			RESULT = s;				
 		} else {
 			semanticErrorManager.semanticFatalError("El tipo de " +ref.getValor()+ " y de " +exp.getValor()+" son incompatibles");
