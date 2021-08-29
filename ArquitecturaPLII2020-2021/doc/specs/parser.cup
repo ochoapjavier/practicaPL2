@@ -607,41 +607,86 @@ seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
 // Expresiones
 expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 {: 	
-	if (exp1.getTipo() == null){
-		semanticErrorManager.semanticFatalError("Error en la comparación menorque entre " + exp1.getValor() + " y " + exp2.getValor()
+	System.out.println("ESTOY EN MENORQUE. exp1.type = " + exp1.getType() + "exp2.type = " + exp2.getType());
+	if (exp1.getType() == null){
+		semanticErrorManager.semanticFatalError("Error en la comparación entre " + exp1.getValor() + " y " + exp2.getValor()
 		+ ". El parametro " + exp1.getValor() + " no existe");
 	}
 	
-	if (exp2.getTipo() == null){
-		semanticErrorManager.semanticFatalError("Error en la comparación menorque entre " + exp1.getValor() + " y " + exp2.getValor()
-		+ ". El parametro " + exp2.getValor() + " no existe");
-	}
-	
-	if (exp1.getTipo().equals("ENTERO") && exp2.getTipo().equals("ENTERO")){
-		Expresion ex = new Expresion("LOGICO", null);
-		RESULT = ex;
-	} else {
-		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación menorque. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
-	}
-:} 
-|  expresion:exp1 IGUALDAD expresion:exp2
-{: 
-	if (exp1.getTipo() == null){
-		semanticErrorManager.semanticFatalError("Error en la igualdad entre " + exp1.getValor() + " y " + exp2.getValor()
-		+ ". El parametro " + exp1.getValor() + " no existe");
-	}
-	
-	if (exp2.getTipo() == null){
-		semanticErrorManager.semanticFatalError("Error en la igualdad entre " + exp1.getValor() + " y " + exp2.getValor()
+	if (exp2.getType() == null){
+		semanticErrorManager.semanticFatalError("Error en la compración entre " + exp1.getValor() + " y " + exp2.getValor()
 		+ ". El parametro " + exp2.getValor() + " no existe");
 	}
 
 	//Si los dos tipos son enteros
-	if (exp1.getTipo().equals("ENTERO") && exp2.getTipo().equals("ENTERO")){
-		Expresion ex = new Expresion("LOGICO", null);
-		RESULT = ex;
+	if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
+		System.out.println("Los tipos coinciden");
+		Expresion exp = new Expresion();
+		exp.setType(scopeManager.searchType("LOGICO"));
+		ScopeIF scope = scopeManager.getCurrentScope();
+		
+		//Código intermedio
+		TemporalFactory tf = new TemporalFactory(scope);
+		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		TemporalIF temp1 = exp1.getTemporal();
+		TemporalIF temp2 = exp2.getTemporal();
+		TemporalIF temp = tf.create();
+		
+		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
+		cb.addQuadruples(exp1.getIntermediateCode());
+		System.out.println("Codigo intermedio: " + exp2.getIntermediateCode());	
+		cb.addQuadruples(exp2.getIntermediateCode());
+		
+		cb.addQuadruple("LS", temp, temp1, temp2);
+		exp.setTemporal(temp);
+		exp.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado
+		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());	
+		RESULT = exp;
 	} else {
-		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de igualdad. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
+		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación. Tipo de " + exp1.getValor() + ": " + exp1.getType().getName() + ", tipo de " + exp2.getValor() + ": " + exp2.getType().getName());	
+	}
+:} 
+|  expresion:exp1 IGUALDAD expresion:exp2
+{: 
+	System.out.println("ESTOY EN IGUALDAD. exp1.type = " + exp1.getType() + "exp2.type = " + exp2.getType());
+	if (exp1.getType() == null){
+		semanticErrorManager.semanticFatalError("Error en la comparación entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp1.getValor() + " no existe");
+	}
+	
+	if (exp2.getType() == null){
+		semanticErrorManager.semanticFatalError("Error en la compración entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp2.getValor() + " no existe");
+	}
+
+	//Si los dos tipos son enteros
+	if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
+		System.out.println("Los tipos coinciden");
+		Expresion exp = new Expresion();
+		exp.setType(scopeManager.searchType("LOGICO"));
+		ScopeIF scope = scopeManager.getCurrentScope();
+		
+		//Código intermedio
+		TemporalFactory tf = new TemporalFactory(scope);
+		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		TemporalIF temp1 = exp1.getTemporal();
+		TemporalIF temp2 = exp2.getTemporal();
+		TemporalIF temp = tf.create();
+		
+		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
+		cb.addQuadruples(exp1.getIntermediateCode());
+		System.out.println("Codigo intermedio: " + exp2.getIntermediateCode());	
+		cb.addQuadruples(exp2.getIntermediateCode());
+		
+		cb.addQuadruple("EQ", temp, temp1, temp2);
+		exp.setTemporal(temp);
+		exp.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado
+		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());	
+		RESULT = exp;
+	} else {
+		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación. Tipo de " + exp1.getValor() + ": " + exp1.getType().getName() + ", tipo de " + exp2.getValor() + ": " + exp2.getType().getName());	
 	}
 
 :} 
