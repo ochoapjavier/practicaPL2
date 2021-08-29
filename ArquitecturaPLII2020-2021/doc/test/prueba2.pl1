@@ -12,8 +12,11 @@ comienzo
 	#x = 10;
 	z = falso;
 	z = cierto;
-	x = a;
-	x = 5;
+	#z = a < 20;
+	#z = a == 10;
+	#z = a == b;
+	#x = a;
+	#x = 5;
 	suma = x + 5;
 	#x = cierto;
 	#x = b;

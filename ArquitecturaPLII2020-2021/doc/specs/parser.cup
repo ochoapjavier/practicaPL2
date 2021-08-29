@@ -245,12 +245,12 @@ defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS {:
 //Devuelve un objeto constante con el campo type y el valor
 valorconstante ::=   FALSO 
 {:
-	Constante c = new Constante(scopeManager.searchType("LOGICO"), "false");
+	Constante c = new Constante(scopeManager.searchType("LOGICO"), "0");
 	RESULT = c;							
 :} 
 | CIERTO 
 {:
-	Constante c = new Constante(scopeManager.searchType("LOGICO"), "true");
+	Constante c = new Constante(scopeManager.searchType("LOGICO"), "1");
 	System.out.println(scopeManager.searchType("LOGICO"));
 	System.out.println(c.getType());
 	RESULT = c;							
@@ -696,14 +696,41 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	Expresion exp = new Expresion();
 	//Setea el valor
 	exp.setValor(id.getLexema());
-	
-	//Si el símbolo existe
-	if(scopeManager.containsSymbol(id.getLexema())){
+
+	//Si el símbolo no existe (está declarándose)
+	if(!(scopeManager.containsSymbol(id.getLexema()))){
+		System.out.println("ESTOY EN IF DE CONFLICTO" + id.getLexema());
+		RESULT = exp;
+	} else {
 		//Poner el tipo
+		System.out.println("ESTOY EN ELSE DE CONFLICTO" + id.getLexema());
 		exp.setType(scopeManager.searchSymbol(id.getLexema()).getType());
-	}	
-	System.out.println("Estoy en EXP/ID " + id.getLexema());
-	RESULT = exp;		
+		System.out.println("Estoy en EXP/ID " + id.getLexema());
+		ScopeIF scope = scopeManager.getCurrentScope();
+	
+		//Código intermedio
+		TemporalFactory tf = new TemporalFactory(scope);
+		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		TemporalIF temp = tf.create();
+		SymbolIF simbolo = scopeManager.searchSymbol(id.getLexema());
+		if (simbolo instanceof SymbolConstant) {
+			System.out.println("ES UNA CONSTANTE " + id.getLexema());
+			int valor = Integer.parseInt(((SymbolConstant)simbolo).getValor());
+			cb.addQuadruple("MV", temp, valor);
+		} else if (simbolo instanceof SymbolVariable) {
+			System.out.println("ES UNA VARIABLE " + id.getLexema());
+			Variable var = new Variable(id.getLexema(), simbolo.getScope());
+			cb.addQuadruple("MVP", temp, var);
+		} else {
+			//enviar mensaje de error no se trata ni de una variable ni de una constante.
+			semanticErrorManager.semanticFatalError("Error en el identificador " + id.getLexema() + " no es una constante o variable");
+		}
+		exp.setTemporal(temp);
+		exp.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado (opcional)
+		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
+		RESULT = exp;
+	}		
 :}  
 | llamadafuncion:exp
 {: 
@@ -712,7 +739,7 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 | CIERTO
 {: 
 	Expresion exp = new Expresion();
-	exp.setValor("true");
+	exp.setValor("1");
 	exp.setType(scopeManager.searchType("LOGICO"));
 	
 	System.out.println("Estoy en EXP/CIERTO");
@@ -747,7 +774,7 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 | FALSO
 {: 
 	Expresion exp = new Expresion();
-	exp.setValor("false");
+	exp.setValor("0");
 	exp.setType(scopeManager.searchType("LOGICO"));
 	
 	System.out.println("Estoy en EXP/FALSO");
