@@ -827,17 +827,42 @@ expresionlvl2 ::=  expresion:exp1 SUMA expresion:exp2
 
 expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 {:
-	if (exp1.getTipo() == null){
-		exp1.setTipo(scopeManager.searchSymbol(exp1.getValor()).getType().getName());
+	System.out.println("ESTOY EN YLOGICA. exp1.type = " + exp1.getType() + "exp2.type = " + exp2.getType());
+	if (exp1.getType() == null){
+		semanticErrorManager.semanticFatalError("Error en la conjunción entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp1.getValor() + " no existe");
 	}
 	
-	if (exp2.getTipo() == null){
-		exp2.setTipo(scopeManager.searchSymbol(exp2.getValor()).getType().getName());
+	if (exp2.getType() == null){
+		semanticErrorManager.semanticFatalError("Error en la conjunción entre " + exp1.getValor() + " y " + exp2.getValor()
+		+ ". El parametro " + exp2.getValor() + " no existe");
 	}
 	
-	if (exp1.getTipo().equals("LOGICO") && exp2.getTipo().equals("LOGICO")){
-		Expresion ex = new Expresion("LOGICO", null);
-		RESULT = ex;
+	if (exp1.getType().equals(scopeManager.searchType("LOGICO")) && exp2.getType().equals(scopeManager.searchType("LOGICO"))){
+		System.out.println("ESTOY EN YLOGICA. Los tipos conciden");
+		Expresion exp = new Expresion();
+		exp.setType(scopeManager.searchType("LOGICO"));
+		
+		ScopeIF scope = scopeManager.getCurrentScope();
+		
+		//Código intermedio
+		TemporalFactory tf = new TemporalFactory(scope);
+		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		TemporalIF temp1 = exp1.getTemporal();
+		TemporalIF temp2 = exp2.getTemporal();
+		TemporalIF temp = tf.create();
+		
+		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
+		cb.addQuadruples(exp1.getIntermediateCode());
+		System.out.println("Codigo intermedio: " + exp2.getIntermediateCode());	
+		cb.addQuadruples(exp2.getIntermediateCode());
+		
+		cb.addQuadruple("AND", temp, temp1, temp2);
+		exp.setTemporal(temp);
+		exp.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado
+		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
+		RESULT = exp;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de conjunción lógica. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
 	}
