@@ -5,7 +5,7 @@ constantes
 		
 	
 variables
-	x: entero;
+	x , suma: entero;
 	z: booleano;
 		
 comienzo
@@ -14,6 +14,7 @@ comienzo
 	z = cierto;
 	x = a;
 	x = 5;
+	suma = x + 5;
 	#x = cierto;
 	#x = b;
 
