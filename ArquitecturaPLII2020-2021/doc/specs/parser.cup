@@ -656,7 +656,8 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	if(scopeManager.containsSymbol(id.getLexema())){
 		//Poner el tipo
 		exp.setType(scopeManager.searchSymbol(id.getLexema()).getType());
-	}			
+	}	
+	System.out.println("Estoy en EXP/ID " + id.getLexema());
 	RESULT = exp;		
 :}  
 | llamadafuncion:exp
@@ -665,17 +666,73 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :} 
 | CIERTO
 {: 
-	Expresion ex = new Expresion();
-	ex.setValor("true");
-	ex.setType(scopeManager.searchType("LOGICO"));
-	RESULT = ex;
+	Expresion exp = new Expresion();
+	exp.setValor("true");
+	exp.setType(scopeManager.searchType("LOGICO"));
+	
+	System.out.println("Estoy en EXP/CIERTO");
+	
+	System.out.println("Iniciando código intermedio...");
+	
+	//Recuperamos el ámbito en el que nos encontramos
+	ScopeIF scope = scopeManager.getCurrentScope();
+	
+	//Creamos una factoría de temporales con su ámbito
+	TemporalFactory tf = new TemporalFactory(scope);
+	
+	//Instanciamos el constructor del código intermedio con su ámbito
+	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+	
+	//Creamos un nuevo temporal
+	TemporalIF temp = tf.create();
+	
+	//Creamos la cuadrupla que almacenará en un temporal el valor del entero
+	cb.addQuadruple ("MV", temp, 1);
+
+	//Añadimos el temporal creado al objeto de la clase Expresion
+	exp.setTemporal(temp);
+	
+	//Añadimos el código intermedio generado al objeto de la clase Expresion
+	exp.setIntermediateCode(cb.create());
+	
+	//Printamos el código intermedio generado (opcional)
+	System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
+	RESULT = exp;
 :}   
 | FALSO
 {: 
-	Expresion ex = new Expresion();
-	ex.setValor("false");
-	ex.setType(scopeManager.searchType("LOGICO"));
-	RESULT = ex;
+	Expresion exp = new Expresion();
+	exp.setValor("false");
+	exp.setType(scopeManager.searchType("LOGICO"));
+	
+	System.out.println("Estoy en EXP/FALSO");
+	
+	System.out.println("Iniciando código intermedio...");
+	
+	//Recuperamos el ámbito en el que nos encontramos
+	ScopeIF scope = scopeManager.getCurrentScope();
+	
+	//Creamos una factoría de temporales con su ámbito
+	TemporalFactory tf = new TemporalFactory(scope);
+	
+	//Instanciamos el constructor del código intermedio con su ámbito
+	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+	
+	//Creamos un nuevo temporal
+	TemporalIF temp = tf.create();
+	
+	//Creamos la cuadrupla que almacenará en un temporal el valor del entero
+	cb.addQuadruple ("MV", temp, 0);
+
+	//Añadimos el temporal creado al objeto de la clase Expresion
+	exp.setTemporal(temp);
+	
+	//Añadimos el código intermedio generado al objeto de la clase Expresion
+	exp.setIntermediateCode(cb.create());
+	
+	//Printamos el código intermedio generado (opcional)
+	System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
+	RESULT = exp;
 :}   
 | miembrovector:exp 
 {:
@@ -683,9 +740,9 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :}
 | NUM:num
 {: 
-	Expresion ex = new Expresion();
-	ex.setValor(num.getLexema());
-	ex.setType(scopeManager.searchType("ENTERO"));
+	Expresion exp = new Expresion();
+	exp.setValor(num.getLexema());
+	exp.setType(scopeManager.searchType("ENTERO"));
 	System.out.println("Estoy en EXP/NUM " + num.getLexema());
 	
 	System.out.println("Iniciando código intermedio...");
@@ -707,15 +764,15 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	cb.addQuadruple("MV", temp, numeroEntero);
 	
 	//Añadimos el temporal creado al objeto de la clase Expresion
-	ex.setTemporal(temp);
+	exp.setTemporal(temp);
 	
 	//Añadimos el código intermedio generado al objeto de la clase Expresion
-	ex.setIntermediateCode(cb.create());
+	exp.setIntermediateCode(cb.create());
 	
 	//Printamos el código intermedio generado (opcional)
-	System.out.println("Codigo intermedio: " + ex.getIntermediateCode());
+	System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
 	
-	RESULT = ex;
+	RESULT = exp;
 :}    
 | expresionlvl2:exp
 {:

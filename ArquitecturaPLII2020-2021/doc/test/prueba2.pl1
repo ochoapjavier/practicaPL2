@@ -6,12 +6,15 @@ constantes
 	
 variables
 	x: entero;
+	z: booleano;
 		
 comienzo
 	#x = 10;
+	z = falso;
+	z = cierto;
 	x = a;
 	x = 5;
-	x = cierto;
+	#x = cierto;
 	#x = b;
 
 fin.
