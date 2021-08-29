@@ -915,13 +915,33 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 	RESULT = exp;
 :};
 
-expresionlvl4 ::= NOLOGICO  expresion:exp
+expresionlvl4 ::= NOLOGICO  expresion:exp1
 {:
-	if (exp.getTipo() == null){
-		exp.setTipo(scopeManager.searchSymbol(exp.getValor()).getType().getName());
+	System.out.println("ESTOY EN NEGACIÓN. exp1.type = " + exp1.getType());
+	if (exp1.getType() == null){
+		semanticErrorManager.semanticFatalError("Error en la negación de " + exp1.getValor() + ". El parametro " + exp1.getValor() + " no existe");
 	}
 	
-	if (exp.getTipo().equals("LOGICO")){
+	if (exp1.getType().equals(scopeManager.searchType("LOGICO"))){
+		System.out.println("Los tipos coinciden");
+		Expresion exp = new Expresion();
+		exp.setType(scopeManager.searchType("LOGICO"));
+		ScopeIF scope = scopeManager.getCurrentScope();
+		
+		//Código intermedio
+		TemporalFactory tf = new TemporalFactory(scope);
+		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		TemporalIF temp1 = exp1.getTemporal();
+		TemporalIF temp = tf.create();
+		
+		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
+		cb.addQuadruples(exp1.getIntermediateCode());
+		
+		cb.addQuadruple("NOT", temp, temp1);
+		exp.setTemporal(temp);
+		exp.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado
+		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());	
 		RESULT = exp;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en la negación. La expresion negada no es de tipo lógico");

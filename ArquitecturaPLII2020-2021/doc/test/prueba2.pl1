@@ -11,8 +11,9 @@ variables
 comienzo
 	#x = 10;
 	z = falso;
-	z = cierto;
+	z = no falso;
 	z = cierto y falso;
+
 	#x = a;
 	#x = 5;
 	suma = x + 5;
