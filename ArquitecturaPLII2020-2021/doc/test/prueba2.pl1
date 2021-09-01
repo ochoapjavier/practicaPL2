@@ -10,6 +10,15 @@ variables
 		
 comienzo
 	#x = 10;
+	
+	#escribir("hola");
+	
+	escribir(x);
+	escribir(a);
+	escribir("hola");
+	#escribir();
+	escribir(b);
+	
 	z = falso;
 	z = cierto;
 	#z = a < 20;

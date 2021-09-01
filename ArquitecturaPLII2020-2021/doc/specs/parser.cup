@@ -1071,6 +1071,8 @@ parteizquierdaasignacion ::= IDEN:id
 sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasignacion:exp DSENTENCIAS
 {:
 	System.out.println(" Estoy en ASIGNACIÓN, REF = " + ref + ", EXP = " + exp );
+	System.out.println(ref.getIntermediateCode());
+	System.out.println(exp.getIntermediateCode());
 	ScopeIF scope = scopeManager.getCurrentScope();
 	//Comprobación que la referencia existe en las tablas de símbolos de los ámbitos abiertos 
 	//y que es una variable o parámetro de subprograma
@@ -1157,7 +1159,10 @@ sentenciallamadafuncion ::= llamadafuncion DSENTENCIAS;
 sentencia ::= sentenciadeasignacion
 | sentenciaif
 | sentenciafor
-| sentenciaEscribir
+| sentenciaEscribir:se
+{:
+	RESULT = se;
+:}
 | sentenciallamadafuncion;
 
 sentenciaFuncion ::= sentenciadeasignacion
@@ -1257,7 +1262,10 @@ sentenciaforFuncion ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 
 // Escribir 
 parametroEscribir ::= STRING:string
 {:
-	Expresion exp = new Expresion ("STRING" , string.getLexema());
+	System.out.println("Estoy en parametroEscribir" + string);
+	Expresion exp = new Expresion ();
+	exp.setTipo("cadena");
+	exp.setValor(string.getLexema());
 	RESULT = exp;
 	
 :} 
@@ -1267,21 +1275,32 @@ parametroEscribir ::= STRING:string
 :}
  | epsilon:ep
  {:
- 	Expresion exp = new Expresion("STRING" , null);
+	System.out.println("ESTOY EN EPSILON");
+ 	Expresion exp = new Expresion();
+	exp.setTipo("cadena");
  	RESULT = exp;
  :};
 sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO DSENTENCIAS
 {:	
-	if (parametro.getTipo() == null) {
-		semanticErrorManager.semanticFatalError("El parametro " + parametro.getValor() + " no está declarado");
-	} else {	
-		if (parametro.getTipo().equals("STRING") || parametro.getTipo().equals("ENTERO")){
-				Sentencia s = new Sentencia();
-				RESULT = s;
-		} else {
-			semanticErrorManager.semanticFatalError("Error en el parametro de tipo " + parametro.getTipo() + " de la sentencia escribir");
-		}
+	System.out.println("Estoy en SENTENCIA ESCRIBIR" + parametro);
+	if(parametro.getTipo() == "cadena") {
+		System.out.println("Es de tipo cadena");
+		Sentencia s = new Sentencia();
+		RESULT = s;
 	}
+
+	//Si es de tipo lógico lanzar error 
+	else if(parametro.getType().equals(scopeManager.searchType("LOGICO"))) {
+		semanticErrorManager.semanticFatalError("El parametro " + parametro.getValor() + " es de tipo LÓGICO. No permitido para la sentencia escribir");
+	} 
+
+	//Si es de tipo entero es correcta
+	else if (parametro.getType().equals(scopeManager.searchType("ENTERO"))) {
+		System.out.println("Es de tipo ENTERO..");
+		Sentencia s = new Sentencia();
+		RESULT = s;
+	} 
+
 :};
 
 // Devolver
