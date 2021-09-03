@@ -13,20 +13,26 @@ comienzo
 	
 	#escribir("hola");
 	
-	escribir(x);
-	escribir(a);
-	escribir("hola");
+si z entonces:
+		escribir("cierto");
+	sino:
+		escribir("falso");
+	fin si;	
+
+	#escribir(x);
+	#escribir(a);
+	#escribir("hola");
 	#escribir();
-	escribir(b);
+	#escribir(b);
 	
-	z = falso;
-	z = cierto;
+	#z = falso;
+	#z = cierto;
 	#z = a < 20;
 	#z = a == 10;
 	#z = a == b;
 	#x = a;
 	#x = 5;
-	suma = x + 5;
+	#suma = x + 5;
 	#x = cierto;
 	#x = b;
 
