@@ -16,7 +16,7 @@ comienzo
 si z entonces:
 		escribir("cierto");
 	sino:
-		escribir("falso");
+		escribir(a);
 	fin si;	
 
 	#escribir(x);

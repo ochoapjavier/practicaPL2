@@ -30,6 +30,8 @@ action code {:
 	SemanticErrorManager semanticErrorManager = CompilerContext.getSemanticErrorManager ();
 	ScopeManagerIF       scopeManager         = CompilerContext.getScopeManager ();
 	FinalCodeFactoryIF   finalCodeFactory     = CompilerContext.getFinalCodeFactory ();
+	//Lista para almacenar cuádruplas de cadenas de caracteres
+	List<QuadrupleIF> listaCadenas = new ArrayList<QuadrupleIF>();
 
 :}	
 
@@ -183,6 +185,7 @@ program ::=
   {: 
   		// No modificar esta estructura, aunque se pueden aï¿½adir mï¿½s acciones semï¿½nticas
   		
+		//System.out.println("Codigo intermedio Axioma: " + ax.getIntermediateCode());
   		//List intermediateCode = ax.getIntermediateCode ();
   		//finalCodeFactory.create (intermediateCode);
 
@@ -1233,7 +1236,6 @@ sentenciaif ::= COMIENZOSI expresion:exp STARTIF DELIMFUNC listaSentencias:s1 re
 		Sentencia s = new Sentencia();
 		
 		ScopeIF scope = scopeManager.getCurrentScope();
-		TemporalFactory tF = new TemporalFactory(scope);
 		LabelFactory lF= new LabelFactory();
 		LabelIF l1 = lF.create(); 											//Etiqueta de comienzo parte Else
 		LabelIF l2 = lF.create(); 											//Etiqueta para fin de sentencia_IF
@@ -1377,6 +1379,19 @@ sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO D
 	if(parametro.getTipo() == "cadena") {
 		System.out.println("Es de tipo cadena");
 		Sentencia s = new Sentencia();
+		ScopeIF scope = scopeManager.getCurrentScope();
+		TemporalFactory tF = new TemporalFactory(scope);
+		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		String texto = parametro.getValor();
+		LabelFactory lF = new LabelFactory();
+		LabelIF lb = lF.create();
+		TemporalIF temp = tF.create();
+		cb.addQuadruple("PRINTC", temp, lb);
+		//Guardamos la cuadrupla de la cadena de caracteres en "listaCadenas" la cual recuperaremos al finalizar el programa principal
+		listaCadenas.add(new Quadruple("CADENA", new Label(texto), lb));
+		s.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado
+		System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 		RESULT = s;
 	}
 
@@ -1389,6 +1404,12 @@ sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO D
 	else if (parametro.getType().equals(scopeManager.searchType("ENTERO"))) {
 		System.out.println("Es de tipo ENTERO..");
 		Sentencia s = new Sentencia();
+		ScopeIF scope = scopeManager.getCurrentScope();
+		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		cb.addQuadruple("PRINTE", parametro.getTemporal());
+		s.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado
+		System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 		RESULT = s;
 	} 
 
