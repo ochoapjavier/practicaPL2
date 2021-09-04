@@ -148,8 +148,8 @@ non terminal Sentencia			sentenciaEscribir ;
 
 non terminal Sentencia			sentencia;
 non terminal Sentencia			sentenciaFuncion;
-non terminal ListaSentencias	listaSentencias;
-non terminal ListaSentencias	listaSentenciasFuncion;
+non terminal Sentencia			listaSentencias;
+non terminal Sentencia			listaSentenciasFuncion;
 non terminal Sentencia			sentenciaif;
 non terminal Sentencia			sentenciaifFuncion;
 non terminal Sentencia 			rellenoif;
@@ -1156,9 +1156,18 @@ sentenciallamadafuncion ::= llamadafuncion DSENTENCIAS;
 
 
 // Sentencias
-sentencia ::= sentenciadeasignacion
-| sentenciaif
-| sentenciafor
+sentencia ::= sentenciadeasignacion:sa
+{:
+	RESULT = sa;
+:}
+| sentenciaif:sif
+{:
+	RESULT = sif;
+:}
+| sentenciafor:sfor
+{:
+	RESULT = sfor;
+:}
 | sentenciaEscribir:se
 {:
 	RESULT = se;
@@ -1181,55 +1190,125 @@ sentenciaFuncion ::= sentenciadeasignacion
 	RESULT = sd;
 :};
 
-listaSentencias ::= sentencia  listaSentencias | epsilon;
-
-listaSentenciasFuncion ::= sentenciaFuncion:sf listaSentenciasFuncion:lsf
+listaSentencias ::= sentencia:s  listaSentencias:ls 
 {:
-	ListaSentencias lista = new ListaSentencias();
+	Sentencia ns = new Sentencia();
+	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scopeManager.getCurrentScope());
+	cb.addQuadruples (s.getIntermediateCode());
+	cb.addQuadruples (ls.getIntermediateCode());
+	ns.setIntermediateCode (cb.create ());
+	RESULT = ns;	
+:}
+| epsilon
+{:
+	Sentencia s= new Sentencia();
+	List list = new ArrayList();
+	s.setIntermediateCode(list);
+	RESULT = s;
+:};
+
+listaSentenciasFuncion ::= sentenciaFuncion:s listaSentenciasFuncion:ls
+{:
+	Sentencia ns = new Sentencia();
+	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scopeManager.getCurrentScope());
+	cb.addQuadruples (s.getIntermediateCode());
+	cb.addQuadruples (ls.getIntermediateCode());
+	ns.setIntermediateCode (cb.create ());
+	RESULT = ns;
 	
-	if (lsf == null){
-		lista.addSentencia(sf);
-		RESULT = lista;
-	} else {
-		lsf.setListaSentencias(lsf.getListaSentencias());
-		lsf.addSentencia(sf);
-		RESULT = lsf;
-	}
-	
-:} | epsilon;
+:} | epsilon
+{:
+	Sentencia s= new Sentencia();
+	List list = new ArrayList();
+	s.setIntermediateCode(list);
+	RESULT = s;
+:};
 
 // if
-sentenciaif ::= COMIENZOSI expresion:exp STARTIF DELIMFUNC listaSentencias rellenoif FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS
+sentenciaif ::= COMIENZOSI expresion:exp STARTIF DELIMFUNC listaSentencias:s1 rellenoif:s2 FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS
 {:	
 	System.out.println("Estoy en el if " + exp);
 	if(exp.getType().equals(scopeManager.searchType("LOGICO"))){
 		System.out.println("Es de tipo lógico");
 		Sentencia s = new Sentencia();
+		
+		ScopeIF scope = scopeManager.getCurrentScope();
+		TemporalFactory tF = new TemporalFactory(scope);
+		LabelFactory lF= new LabelFactory();
+		LabelIF l1 = lF.create(); 											//Etiqueta de comienzo parte Else
+		LabelIF l2 = lF.create(); 											//Etiqueta para fin de sentencia_IF
+		TemporalIF expTemp = exp.getTemporal();
+		IntermediateCodeBuilder cb= new IntermediateCodeBuilder(scope);
+		cb.addQuadruples(exp.getIntermediateCode()); 						//añadir el código de la expresión
+		cb.addQuadruple("BRF", expTemp ,l1); 								//si no se cumple la condicion salto a l1
+		cb.addQuadruples (s1.getIntermediateCode()); 						// añadir código sentencias parte IF
+		cb.addQuadruple("BR", l2); 											//salto a la etiqueta l2
+		cb.addQuadruple("INL", l1); 										// insertar etiqueta l1
+		cb.addQuadruples(s2.getIntermediateCode()); 						//añadir código sentencias parte Else
+		cb.addQuadruple("INL", l2); 										// insertar etiqueta l2
+		s.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado
+		System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 		RESULT = s;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en la expresión, debe ser de tipo lógico y es de tipo: " + exp.getTipo());
 	}
 	
 :};
-sentenciaifFuncion ::= COMIENZOSI expresion:exp  STARTIF DELIMFUNC listaSentenciasFuncion rellenoifFuncion  FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS 
+sentenciaifFuncion ::= COMIENZOSI expresion:exp  STARTIF DELIMFUNC listaSentenciasFuncion:s1 rellenoifFuncion:s2  FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS 
 {:	
+	System.out.println("Estoy en el if " + exp);
 	if(exp.getType().equals(scopeManager.searchType("LOGICO"))){
 		System.out.println("Es de tipo lógico");
 		Sentencia s = new Sentencia();
+		
+		ScopeIF scope = scopeManager.getCurrentScope();
+		TemporalFactory tF = new TemporalFactory(scope);
+		LabelFactory lF= new LabelFactory();
+		LabelIF l1 = lF.create(); 											//Etiqueta de comienzo parte Else
+		LabelIF l2 = lF.create(); 											//Etiqueta para fin de sentencia_IF
+		TemporalIF expTemp = exp.getTemporal();
+		IntermediateCodeBuilder cb= new IntermediateCodeBuilder(scope);
+		cb.addQuadruples(exp.getIntermediateCode()); 						//añadir el código de la expresión
+		cb.addQuadruple("BRF", expTemp ,l1); 								//si no se cumple la condicion salto a l1
+		cb.addQuadruples (s1.getIntermediateCode()); 						// añadir código sentencias parte IF
+		cb.addQuadruple("BR", l2); 											//salto a la etiqueta l2
+		cb.addQuadruple("INL", l1); 										// insertar etiqueta l1
+		cb.addQuadruples(s2.getIntermediateCode()); 						//añadir código sentencias parte Else
+		cb.addQuadruple("INL", l2); 										// insertar etiqueta l2
+		s.setIntermediateCode(cb.create());
+		//printamos el código intermedio generado
+		System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 		RESULT = s;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en la expresión, debe ser de tipo lógico y es de tipo: " + exp.getTipo());
 	}
 :};
 
-rellenoifFuncion ::=  ALTERNATIVASI DELIMFUNC  listaSentenciasFuncion | epsilon ;
-rellenoif ::=  ALTERNATIVASI DELIMFUNC  listaSentencias 
+rellenoifFuncion ::=  ALTERNATIVASI DELIMFUNC  listaSentenciasFuncion:ls
+{:
+	System.out.println("Estoy en el else Función (SINO)");
+	RESULT = ls;
+:}
+| epsilon 
+{:
+	Sentencia s= new Sentencia();
+	List list = new ArrayList();
+	s.setIntermediateCode(list);
+	RESULT = s;
+:};
+
+rellenoif ::=  ALTERNATIVASI DELIMFUNC  listaSentencias:ls
 {:
 	System.out.println("Estoy en el else (SINO)");
+	RESULT = ls;
 :}
 | epsilon
 {:
-
+	Sentencia s= new Sentencia();
+	List list = new ArrayList();
+	s.setIntermediateCode(list);
+	RESULT = s;
 :};
 
 // for 
