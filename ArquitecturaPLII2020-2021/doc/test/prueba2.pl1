@@ -7,19 +7,34 @@ constantes
 variables
 	x , suma: entero;
 	z: booleano;
+
+#subprogramas
+	
+	#funcion ejFuncion2 (g,h : entero): entero:
+		#variables sum: entero;
+		#comienzo
+			#sum = g + h;
+			#devolver sum;
+	#fin;	
 		
 comienzo
+	
+	para x en 0 .. 10:
+		escribir(x);
+
+	fin para;
+
 	#x = 10;
 	
 	#escribir("hola");
 	
-si z entonces:
-		escribir("cierto");
-	sino:
-		escribir(a);
-	fin si;	
+	#si z entonces:
+		#escribir("cierto");
+	#sino:
+		#escribir(a);
+	#fin si;	
 
-	#escribir(x);
+	escribir(x);
 	#escribir(a);
 	#escribir("hola");
 	#escribir();

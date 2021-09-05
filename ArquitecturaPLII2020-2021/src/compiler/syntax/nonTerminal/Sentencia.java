@@ -1,7 +1,10 @@
 package compiler.syntax.nonTerminal;
 
+import es.uned.lsi.compiler.semantic.type.TypeIF;
+
 public class Sentencia extends NonTerminal{
 	
+	private TypeIF type;
 	private String tipo;
 	private String valor;
 
@@ -13,6 +16,14 @@ public class Sentencia extends NonTerminal{
 		super();
 		this.tipo = tipo;
 		this.valor = valor;
+	}
+
+	public TypeIF getType() {
+		return type;
+	}
+
+	public void setType(TypeIF type) {
+		this.type = type;
 	}
 
 	public void setValor(String valor) {

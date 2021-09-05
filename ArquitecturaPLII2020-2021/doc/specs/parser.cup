@@ -121,7 +121,7 @@ non terminal					puntoycomaopcional;
 
 non terminal Var				tiporetornofuncion;
 non terminal  					seccionsubprograma;
-non terminal  					defprincipal;
+non terminal Sentencia			defprincipal;
 non terminal Var				selectorvalororeferencia;
 
 
@@ -185,7 +185,7 @@ program ::=
   {: 
   		// No modificar esta estructura, aunque se pueden aï¿½adir mï¿½s acciones semï¿½nticas
   		
-		//System.out.println("Codigo intermedio Axioma: " + ax.getIntermediateCode());
+		System.out.println("Codigo intermedio Axioma: " + ax.getIntermediateCode());
   		//List intermediateCode = ax.getIntermediateCode ();
   		//finalCodeFactory.create (intermediateCode);
 
@@ -197,13 +197,29 @@ program ::=
   		syntaxErrorManager.syntaxInfo ("Parsing process ended.");
    :};
 
-axiom ::= defprincipal;
+axiom ::= defprincipal:df
+{:	
+	System.out.println("AXIOM..." +df.getIntermediateCode());
+	System.out.println(scopeManager.getCurrentScope());
+	ScopeIF scope = scopeManager.getCurrentScope();
+	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);                     
+	cb.addQuadruples(df.getIntermediateCode());
+                            
+	List code = cb.create();
+                  
+	Axiom ax = new AxiomImp();
+
+	ax.setIntermediateCode(df.getIntermediateCode());
+
+	RESULT = ax;
+:};
 
 epsilon ::=;
 
 // Definición de programa principal
 defprincipal ::= COMIENZOPROGRAMA IDEN:id
-{:
+{:	
+	System.out.println("DEFPRINCIPAL...");
 	//Creamos el ámbito global con el nombre del programa principal
 	String nombre = id.getLexema();
 	scopeManager.openScope(nombre);
@@ -218,9 +234,10 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
 	typeTable.addType("LOGICO", tsLogico);
 :} 
-DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias FINBLOQUESENTENCIAS FINPROGRAMA
+DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias:ls FINBLOQUESENTENCIAS FINPROGRAMA
 {:
-	scopeManager.closeScope();
+	//scopeManager.closeScope();
+	RESULT = ls;
 :};
 
 /*--------------------------------------------------------------------------*/
@@ -298,13 +315,15 @@ deftipos ::=IDEN:id ASIGNACION DECLVECTOR CIZQUIERDO valorango:v1 RANGO valorang
 
 tipovector ::= BOOLEANO 
 {: 
-	TipoVector tv = new TipoVector("LOGICO");
+	TipoVector tv = new TipoVector();
+	tv.setType(scopeManager.searchType("LOGICO"));
 	RESULT = tv;
 :} 
 				
 | ENTERO 
 {: 
-	TipoVector tv = new TipoVector("ENTERO");
+	TipoVector tv = new TipoVector();
+	tv.setType(scopeManager.searchType("ENTERO"));
 	RESULT = tv;
 :};
 
@@ -441,10 +460,7 @@ seccionvariables ::= DECLVARIABLES defvariables:lista
 		//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
 		ScopeIF scope = scopeManager.getCurrentScope();
 		SymbolTableIF symTable = scope.getSymbolTable();		
-		
-		System.out.println("Estoy en SECCVAR " + lista.getVariable(i));
-		System.out.println("Estoy en SECCVAR " + lista.getVariable(i).getType());
-		System.out.println("Estoy en SECCVAR " + lista.getVariable(i).getValor());
+	
 		
 		//Comprobamos que la variable no este ya contenida en la tabla de símbolos
 		if(symTable.containsSymbol(lista.getVariable(i).getValor())){
@@ -531,13 +547,16 @@ PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubpro
 
 tiporetornofuncion ::= IDEN:id
 {:	
+	System.out.println("Estoy en tiporetornofuncion " +id);
 	//Var v = new Var(id.getLexema(), id.getLexema());
 	//RESULT = v;
 :} 
 | tipovector:tv
-{:
-	//Var v = new Var(tv.getTipo(), null);
-	//RESULT = v;
+{:	
+	System.out.println("Estoy en tiporetornofuncion vector" +tv.getType());
+	Var v = new Var();
+	v.setType(tv.getType());
+	RESULT = v;
 :};
 
 /*funcion funcion():entero:
@@ -548,6 +567,7 @@ tiporetornofuncion ::= IDEN:id
 */
 funcion ::= DECLAREFUNCION IDEN:id 
 {:
+	System.out.println("ESTOY EN LA FUNCIÓN " +id);
 	ScopeIF scope = scopeManager.getCurrentScope();
 	SymbolTableIF symTable = scope.getSymbolTable();
 	TypeTableIF typeTable = scope.getTypeTable();
@@ -567,28 +587,34 @@ funcion ::= DECLAREFUNCION IDEN:id
     }	
 :} 
 PIZQUIERDO defvariables:lista PDERECHO DELIMFUNC tiporetornofuncion:tipo 
-{:
+{:	
+	System.out.println("ESTOY EN LA SEGUNDA PARTE DE FUNCIÓN " +id);
 	//Si la lista no está vacía
 	if (lista != null){
 		for (int i = 0; i < lista.size(); i++) {
 			//Recuperamos el ámbito donde nos encontramos y obtenemos la tabla de símbolos
 			ScopeIF scope = scopeManager.getCurrentScope();
 			SymbolTableIF symTable = scope.getSymbolTable();
-			
 			//Comprobamos que la variable no este ya contenida en la tabla de símbolos
 			if(symTable.containsSymbol(lista.getVariable(i).getId())){
 				semanticErrorManager.semanticFatalError("Parametro " + lista.getVariable(i).getId() + " con identificador en uso");
-			} else {				
+			} else {			
 				//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
 				TypeTableIF typeTable = scope.getTypeTable();
-				TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());			
-							
-				SymbolParameter parametro = new SymbolParameter(scope, lista.getVariable(i).getValor(), type);
-				symTable.addSymbol(parametro);	
+				System.out.println(lista.getVariable(i).getTipo());
+				//TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());			
+
 				
+				SymbolParameter parametro = new SymbolParameter(scope, lista.getVariable(i).getValor(), lista.getVariable(i).getType());
+				System.out.println(parametro);
+				symTable.addSymbol(parametro);	
+				System.out.println("Añadido parametro");
+				System.out.println(scopeManager.containsSymbol(id.getLexema()));
+				System.out.println(tipo);
 				TypeFunction funcion = (TypeFunction)scopeManager.searchType(scope.getName());
 				funcion.addParametro(parametro);
-				funcion.setRetorno(tipo.getTipo());
+				funcion.setRetorno(tipo.getType().getName());
+				System.out.println(funcion.getRetorno());
 			}		
 		}
 	}
@@ -724,7 +750,9 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 			System.out.println("ES UNA VARIABLE " + id.getLexema());
 			Variable var = new Variable(id.getLexema(), simbolo.getScope());
 			cb.addQuadruple("MVP", temp, var);
-		} else {
+		} else if (simbolo instanceof SymbolParameter){
+			RESULT = exp;
+		} else	 {
 			//enviar mensaje de error no se trata ni de una variable ni de una constante.
 			semanticErrorManager.semanticFatalError("Error en el identificador " + id.getLexema() + " no es una constante o variable");
 		}
@@ -1313,12 +1341,17 @@ rellenoif ::=  ALTERNATIVASI DELIMFUNC  listaSentencias:ls
 	RESULT = s;
 :};
 
-// for 
+/* para x en 0 .. 10:
+		escribir(x);
+
+	fin para; 
+*/
 sentenciafor ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 RANGO expresion:exp2 DELIMFUNC listaSentencias FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS
 {:
 	if(scopeManager.containsSymbol(id.getLexema())){
 		if(scopeManager.searchSymbol(id.getLexema()).getType().getName() == "ENTERO"){
-			if (exp1.getTipo() == "ENTERO" && exp2.getTipo() == "ENTERO"){
+			if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
+				System.out.println("Estoy en el for, las expresiones son enteras");
 				Sentencia s = new Sentencia();
 				RESULT = s;
 			} else {
@@ -1418,8 +1451,11 @@ sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO D
 // Devolver
 sentenciaDevolver ::= FRETURN expresion:exp DSENTENCIAS
 {:
+	System.out.println("Estoy en RETURN " + exp);
 	Sentencia s = new Sentencia();
-	s.setTipo(exp.getTipo());
+	System.out.println(s);
+	s.setType(exp.getType());
+	System.out.println(s);
 	RESULT = s;
 :};
 

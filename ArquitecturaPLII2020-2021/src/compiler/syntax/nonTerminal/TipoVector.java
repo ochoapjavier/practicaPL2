@@ -20,6 +20,14 @@ public class TipoVector extends NonTerminal{
 		this.tipo = tipo;
 	}
 	
+	public TypeIF getType() {
+		return type;
+	}
+
+	public void setType(TypeIF type) {
+		this.type = type;
+	}
+
 	public String getTipo() {
 		return tipo;
 	}
