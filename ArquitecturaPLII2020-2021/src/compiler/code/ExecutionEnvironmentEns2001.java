@@ -3,11 +3,16 @@ package compiler.code;
 import java.util.Arrays;
 import java.util.List;
 
+import compiler.intermediate.Label;
+import compiler.intermediate.Temporal;
+import compiler.intermediate.Value;
+import compiler.intermediate.Variable;
 import compiler.semantic.type.TypeSimple;
 
 import es.uned.lsi.compiler.code.ExecutionEnvironmentIF;
 import es.uned.lsi.compiler.code.MemoryDescriptorIF;
 import es.uned.lsi.compiler.code.RegisterDescriptorIF;
+import es.uned.lsi.compiler.intermediate.OperandIF;
 import es.uned.lsi.compiler.intermediate.QuadrupleIF;
 
 /**
@@ -94,6 +99,35 @@ public class ExecutionEnvironmentEns2001
     public final String translate (QuadrupleIF quadruple)
     {      
         //TODO: Student work
+    	if(quadruple.getOperation().equals("ADD")) {
+    		System.out.println("Estoy en translate ADD");
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("ADD" + o1 + "," + o2 + "\n");
+    		b.append("MOVE" + ".A" + "," + r);
+    		return b.toString();
+    		
+    	}
         return quadruple.toString(); 
+    }
+    
+    public String operacion(OperandIF o) {
+    	System.out.println("Estoy en operacion "+o);
+    	if (o instanceof Variable) {
+    		return "/" + ((Variable)o).getAddress();
+    	}
+    	if (o instanceof Value) {
+    		return "#" + ((Value)o).getValue();
+    	}
+    	if (o instanceof Temporal) {
+    		return "/" + ((Temporal)o).getAddress();
+    	}
+    	if (o instanceof Label) {
+    		return  ((Label)o).getName();
+    	}
+    	return null;
     }
 }

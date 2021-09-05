@@ -1,0 +1,11 @@
+Quadruple - [VARGLOBAL suma, 0, null]
+Quadruple - [VARGLOBAL x, 0, null]
+Quadruple - [VARGLOBAL z, 0, null]
+Quadruple - [MV T_0, 10, null]
+Quadruple - [MV T_1, 2, null]
+;Quadruple - [ADD T_2, T_0, T_1]
+ADD/65532,/65531
+MOVE.A,/65530
+Quadruple - [MVA T_3, x, null]
+Quadruple - [STP T_3, T_2, null]
+Quadruple - [PRINTE T_4, null, null]

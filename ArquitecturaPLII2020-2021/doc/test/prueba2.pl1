@@ -18,11 +18,11 @@ variables
 	#fin;	
 		
 comienzo
-	
-	para x en 0 .. 10:
-		escribir(x);
+	x = a + 2;
+	#para x en 0 .. 10:
+		#escribir(x);
 
-	fin para;
+	#fin para;
 
 	#x = 10;
 	

@@ -183,11 +183,57 @@ program ::=
    :}
   axiom:ax
   {: 
+		ExecutionEnvironmentEns2001 CodigoFinal = new ExecutionEnvironmentEns2001();
+		List<ScopeIF> scopes = scopeManager.getAllScopes();
+		for (ScopeIF scope: scopes) {
+			int direccionEstatica = CodigoFinal.getMemorySize(); //Comienzo de la zona de datos estáticos, por ejemplo 1000
+			//int direccionRA = 4; //Comienzo de los datos dentro de un R.A.(Valor Retorno + Enl. de Control + Estado Máquina + Enl. de Acceso)
+			
+			List<SymbolIF> symbols = scope.getSymbolTable ().getSymbols();
+			for (SymbolIF s: symbols) {
+				if (s instanceof SymbolVariable) {
+				//Comprobar si el símbolo es un parámetro y lo guardamos en el R.A. del subprograma correspondiente, guardamos la dirección
+				//del parámetro en SymbolParameter C:\..\ArquitecturaPLIIGr-\src\compiler\semantic\symbol\SymbolParameter.java
+					((SymbolVariable)s).setAddress(direccionEstatica);
+					direccionEstatica = direccionEstatica - s.getType().getSize();//Actualizamos el valor de la dirección del R.A.
+				}
+			}
+
+			List<TemporalIF> temporals = scope.getTemporalTable ().getTemporals();
+			for (TemporalIF t: temporals) {
+				if (t instanceof Temporal) {
+					System.out.println("For temporal "+ t);
+					System.out.println(t.getAddress());
+					((Temporal)t).setAddress(direccionEstatica);
+					System.out.println(t.getAddress());
+					System.out.println("Antes direccionEstatica " + direccionEstatica);
+					direccionEstatica = direccionEstatica - ((Temporal)t).getSize();
+					System.out.println("Despues direccionEstatica " + direccionEstatica);
+				}
+			} 	 
+		}
+		for (ScopeIF scope: scopes) {
+			IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+			if(scope.getLevel() == 0) {
+				List<SymbolIF> simbolos = scope.getSymbolTable ().getSymbols();
+				for(SymbolIF simbolo: simbolos) {
+					if(simbolo instanceof SymbolVariable) {
+						int direccion = ((SymbolVariable)simbolo).getAddress();
+						Variable var = new Variable(simbolo.getName(),simbolo.getScope());
+						cb.addQuadruple("VARGLOBAL",var,0);
+					}
+				}
+			}
+			cb.addQuadruples(ax.getIntermediateCode());
+			ax.setIntermediateCode(cb.create());
+		}
+
   		// No modificar esta estructura, aunque se pueden aï¿½adir mï¿½s acciones semï¿½nticas
   		
 		System.out.println("Codigo intermedio Axioma: " + ax.getIntermediateCode());
-  		//List intermediateCode = ax.getIntermediateCode ();
-  		//finalCodeFactory.create (intermediateCode);
+  		List intermediateCode = ax.getIntermediateCode ();
+		finalCodeFactory.setEnvironment(CompilerContext.getExecutionEnvironment());
+  		finalCodeFactory.create (intermediateCode);
 
   		// En caso de no comentarse las dos sentencias anteriores puede generar una excepcion
   		// en las llamadas a cupTest si el compilador no estÃ¡ completo. Esto es debido a que 
