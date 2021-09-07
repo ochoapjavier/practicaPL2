@@ -189,11 +189,10 @@ program ::=
 			int direccionEstatica = CodigoFinal.getMemorySize(); //Comienzo de la zona de datos estáticos, por ejemplo 1000
 			//int direccionRA = 4; //Comienzo de los datos dentro de un R.A.(Valor Retorno + Enl. de Control + Estado Máquina + Enl. de Acceso)
 			
-			List<SymbolIF> symbols = scope.getSymbolTable ().getSymbols();
+			List<SymbolIF> symbols = scope.getSymbolTable().getSymbols();
 			for (SymbolIF s: symbols) {
 				if (s instanceof SymbolVariable) {
 				//Comprobar si el símbolo es un parámetro y lo guardamos en el R.A. del subprograma correspondiente, guardamos la dirección
-				//del parámetro en SymbolParameter C:\..\ArquitecturaPLIIGr-\src\compiler\semantic\symbol\SymbolParameter.java
 					((SymbolVariable)s).setAddress(direccionEstatica);
 					direccionEstatica = direccionEstatica - s.getType().getSize();//Actualizamos el valor de la dirección del R.A.
 				}
@@ -220,6 +219,8 @@ program ::=
 					if(simbolo instanceof SymbolVariable) {
 						int direccion = ((SymbolVariable)simbolo).getAddress();
 						Variable var = new Variable(simbolo.getName(),simbolo.getScope());
+						var.setAddress(direccion);
+						System.out.println("Antes de VARGLOBAL " + var.getAddress());
 						cb.addQuadruple("VARGLOBAL",var,0);
 					}
 				}

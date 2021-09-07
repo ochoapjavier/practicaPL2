@@ -99,33 +99,76 @@ public class ExecutionEnvironmentEns2001
     public final String translate (QuadrupleIF quadruple)
     {      
         //TODO: Student work
+    	if(quadruple.getOperation().equals("VARGLOBAL")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
     	if(quadruple.getOperation().equals("ADD")) {
-    		System.out.println("Estoy en translate ADD");
     		StringBuffer b = new StringBuffer();
     		String o1 = operacion(quadruple.getFirstOperand());
     		String o2 = operacion(quadruple.getSecondOperand());
     		String r = operacion(quadruple.getResult());
     		b.append(";" + quadruple.toString() + "\n");
-    		b.append("ADD" + o1 + "," + o2 + "\n");
-    		b.append("MOVE" + ".A" + "," + r);
+    		b.append("ADD " + o1 + "," + o2 + "\n");
+    		b.append("MOVE " + ".A" + "," + r);
     		return b.toString();
-    		
     	}
+    	
+    	if(quadruple.getOperation().equals("MUL")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MUL " + o1 + "," + o2 + "\n");
+    		b.append("MOVE " + ".A" + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("MV")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("MVA")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
+    	
         return quadruple.toString(); 
     }
     
     public String operacion(OperandIF o) {
     	System.out.println("Estoy en operacion "+o);
     	if (o instanceof Variable) {
+    		System.out.println("Variable "+o);
+    		System.out.println(((Variable) o).getAddress());
     		return "/" + ((Variable)o).getAddress();
     	}
     	if (o instanceof Value) {
+    		System.out.println("Value "+o);
     		return "#" + ((Value)o).getValue();
     	}
     	if (o instanceof Temporal) {
+    		System.out.println("Temporal "+o);
     		return "/" + ((Temporal)o).getAddress();
     	}
     	if (o instanceof Label) {
+    		System.out.println("Label "+o);
     		return  ((Label)o).getName();
     	}
     	return null;

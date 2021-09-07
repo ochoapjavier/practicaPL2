@@ -12,6 +12,7 @@ public class Variable
 {
     private String  name     = null;
     private ScopeIF scope    = null;
+    private int address;
         
     /**
      * Constructor for Variable.
@@ -25,7 +26,11 @@ public class Variable
         this.scope = scope;
     }
 
-    /**
+    public void setAddress(int address) {
+		this.address = address;
+	}
+
+	/**
      * Returns the name.
      * @return Returns the name.
      */
@@ -53,7 +58,7 @@ public class Variable
     public final int getAddress ()
     {
         // TODO : Student Work
-        return 0;
+        return address;
     }
 
     /**
