@@ -99,12 +99,28 @@ public class ExecutionEnvironmentEns2001
     public final String translate (QuadrupleIF quadruple)
     {      
         //TODO: Student work
+    	if(quadruple.getOperation().equals("HALT")) {
+    		StringBuffer b = new StringBuffer();
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("HALT");
+    		return b.toString();
+    	}
+    	
     	if(quadruple.getOperation().equals("VARGLOBAL")) {
     		StringBuffer b = new StringBuffer();
     		String o1 = operacion(quadruple.getFirstOperand());
     		String r = operacion(quadruple.getResult());
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("PRINTE")) {
+    		StringBuffer b = new StringBuffer();
+    		String r = operacion(quadruple.getResult());
+    		System.out.println("resultado de PRINTE" +r);
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("WRINT " + r);
     		return b.toString();
     	}
     	

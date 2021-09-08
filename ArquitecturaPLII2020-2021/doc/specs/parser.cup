@@ -250,8 +250,7 @@ axiom ::= defprincipal:df
 	System.out.println(scopeManager.getCurrentScope());
 	ScopeIF scope = scopeManager.getCurrentScope();
 	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);                     
-	cb.addQuadruples(df.getIntermediateCode());
-                            
+	cb.addQuadruples(df.getIntermediateCode());                    
 	List code = cb.create();
                   
 	Axiom ax = new AxiomImp();
@@ -264,7 +263,7 @@ axiom ::= defprincipal:df
 epsilon ::=;
 
 // Definición de programa principal
-defprincipal ::= COMIENZOPROGRAMA IDEN:id
+defprincipal ::= COMIENZOPROGRAMA IDEN:id 
 {:	
 	System.out.println("DEFPRINCIPAL...");
 	//Creamos el ámbito global con el nombre del programa principal
@@ -280,10 +279,10 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	typeTable.addType("ENTERO", tsEntero);
 	TypeSimple tsLogico = new TypeSimple(scope, "LOGICO");
 	typeTable.addType("LOGICO", tsLogico);
-:} 
-DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias:ls FINBLOQUESENTENCIAS FINPROGRAMA
-{:
+:}	
 	//scopeManager.closeScope();
+DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias:ls FINBLOQUESENTENCIAS FINPROGRAMA
+{:	
 	RESULT = ls;
 :};
 
@@ -293,6 +292,8 @@ DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COM
 
 //Definición de constantes
 defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS {:
+	System.out.println("Entro en defconstantes");
+
 	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de símbolos
 	ScopeIF scope = scopeManager.getCurrentScope();
 	SymbolTableIF symTable = scope.getSymbolTable();
@@ -324,13 +325,15 @@ valorconstante ::=   FALSO
 :}
 | NUM:n
 {:
+	System.out.println("valorconstante" +n.getLexema());
+	System.out.println(scopeManager.getCurrentScope());
 	Constante c = new Constante(scopeManager.searchType("ENTERO"), n.getLexema());
 	System.out.println(scopeManager.searchType("ENTERO"));
 	System.out.println(c.getType());
 	RESULT = c;							
 :};
 
-seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
+seccionconstantes ::= BCONSTANTES defconstantes{:System.out.println("SeccConst");:} | epsilon;
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------------DEF TIPOS----------------------------------*/
@@ -339,7 +342,8 @@ seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
 
 // Definición de tipos (nombreTipo = vector [n1..n2] de TipoPrimitivo;)
 deftipos ::=IDEN:id ASIGNACION DECLVECTOR CIZQUIERDO valorango:v1 RANGO valorango:v2 CDERECHO ASIGNACIONVECTOR tipovector:tipoV  DSENTENCIAS deftipos 
-{:
+{:	
+	System.out.println("Entro en deftipos");
 	if (Integer.parseInt(v1.getValor()) > Integer.parseInt(v2.getValor())) {
 		//Dar error
 		semanticErrorManager.semanticFatalError("Error en la definición de tipos, parametros equivocados en el rango del vector");

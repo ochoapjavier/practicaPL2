@@ -4,5 +4,6 @@ MOVE #0,/65535
 MOVE #0,/65534
 ;Quadruple - [VARGLOBAL z, 0, null]
 MOVE #0,/65533
-;Quadruple - [PRINTE T_0, null, null]
-WRINT /65532
+;Quadruple - [HALT null, null, null]
+HALT
+
