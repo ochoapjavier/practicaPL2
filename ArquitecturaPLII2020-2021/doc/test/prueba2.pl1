@@ -18,8 +18,9 @@ variables
 	#fin;	
 		
 comienzo
-	escribir(5);
-	#suma = 3 + 2;
+	#escribir(a*7);
+	suma = 3 + 2;
+	escribir(suma);
 	#x = suma * 4;
 	#para x en 0 .. 10:
 		#escribir(x);

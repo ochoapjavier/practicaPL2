@@ -214,13 +214,15 @@ program ::=
 		for (ScopeIF scope: scopes) {
 			IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
 			if(scope.getLevel() == 0) {
-				List<SymbolIF> simbolos = scope.getSymbolTable ().getSymbols();
+				List<SymbolIF> simbolos = scope.getSymbolTable().getSymbols();
 				for(SymbolIF simbolo: simbolos) {
 					if(simbolo instanceof SymbolVariable) {
 						int direccion = ((SymbolVariable)simbolo).getAddress();
 						Variable var = new Variable(simbolo.getName(),simbolo.getScope());
+						System.out.println("Llego aqui ");
+						System.out.println("1. Antes de VARGLOBAL, variable " + var + " dir " + var.getAddress());
 						var.setAddress(direccion);
-						System.out.println("Antes de VARGLOBAL " + var.getAddress());
+						System.out.println("2. Antes de VARGLOBAL, variable " + var + " dir " + var.getAddress());
 						cb.addQuadruple("VARGLOBAL",var,0);
 					}
 				}
@@ -265,7 +267,6 @@ epsilon ::=;
 // Definición de programa principal
 defprincipal ::= COMIENZOPROGRAMA IDEN:id 
 {:	
-	System.out.println("DEFPRINCIPAL...");
 	//Creamos el ámbito global con el nombre del programa principal
 	String nombre = id.getLexema();
 	scopeManager.openScope(nombre);
@@ -292,7 +293,6 @@ DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COM
 
 //Definición de constantes
 defconstantes ::=   IDEN:id ASIGNACION valorconstante:valor DSENTENCIAS {:
-	System.out.println("Entro en defconstantes");
 
 	//Recuperamos el ámbito dinde nos encontramos y obtenemos la tabla de símbolos
 	ScopeIF scope = scopeManager.getCurrentScope();
@@ -319,21 +319,16 @@ valorconstante ::=   FALSO
 | CIERTO 
 {:
 	Constante c = new Constante(scopeManager.searchType("LOGICO"), "1");
-	System.out.println(scopeManager.searchType("LOGICO"));
-	System.out.println(c.getType());
 	RESULT = c;							
 :}
 | NUM:n
 {:
-	System.out.println("valorconstante" +n.getLexema());
-	System.out.println(scopeManager.getCurrentScope());
+
 	Constante c = new Constante(scopeManager.searchType("ENTERO"), n.getLexema());
-	System.out.println(scopeManager.searchType("ENTERO"));
-	System.out.println(c.getType());
 	RESULT = c;							
 :};
 
-seccionconstantes ::= BCONSTANTES defconstantes{:System.out.println("SeccConst");:} | epsilon;
+seccionconstantes ::= BCONSTANTES defconstantes | epsilon;
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------------DEF TIPOS----------------------------------*/
@@ -343,7 +338,7 @@ seccionconstantes ::= BCONSTANTES defconstantes{:System.out.println("SeccConst")
 // Definición de tipos (nombreTipo = vector [n1..n2] de TipoPrimitivo;)
 deftipos ::=IDEN:id ASIGNACION DECLVECTOR CIZQUIERDO valorango:v1 RANGO valorango:v2 CDERECHO ASIGNACIONVECTOR tipovector:tipoV  DSENTENCIAS deftipos 
 {:	
-	System.out.println("Entro en deftipos");
+
 	if (Integer.parseInt(v1.getValor()) > Integer.parseInt(v2.getValor())) {
 		//Dar error
 		semanticErrorManager.semanticFatalError("Error en la definición de tipos, parametros equivocados en el rango del vector");
@@ -382,8 +377,6 @@ tipovector ::= BOOLEANO
 valorango ::= NUM:n
 {: 
 	Constante c = new Constante(scopeManager.searchType("ENTERO"), n.getLexema());
-	System.out.println(scopeManager.searchType("ENTERO"));
-	System.out.println(c);
 	RESULT = c;	
 :} 
 
@@ -425,19 +418,16 @@ secciontipos ::= COMIENZODECLTIPOS deftipos | epsilon;
 // Definición de variables
 tipovariable ::= BOOLEANO 
 {: 
-	System.out.println("Estoy en tipovariable BOOLEANO");
 	Var v = new Var(scopeManager.searchType("LOGICO"));
 	RESULT = v;
 :} 
 | ENTERO 
 {: 
-	System.out.println("Estoy en tipovariable ENTERO");
 	Var v = new Var(scopeManager.searchType("ENTERO"));
 	RESULT = v;
 :} 
 | IDEN:r
 {: 	
-	System.out.println("Estoy en tipovariable IDEN");
 	Var v = new Var(r.getLexema());
 	RESULT = v;
 :} ;
@@ -445,13 +435,10 @@ tipovariable ::= BOOLEANO
 //x, z : entero;
 defvariables ::= listavariables:listaFila DELIMFUNC tipovariable:tipo puntoycomaopcional defvariables:listaAcum 
 {:
-	System.out.println("Estoy en defvariables");
 	SecuenciaVariables sv = new SecuenciaVariables();	
 	if (listaAcum == null){
 		for (int i = 0; i < listaFila.size(); i++) {
-			System.out.println("DEFVAR variable" + listaFila.getVariable(i) + " tipo: " + tipo);
 			listaFila.getVariable(i).setType(tipo.getType());
-			System.out.println("Seteo tipo de variable... " + listaFila.getVariable(i));
 			sv.addVariable(listaFila.getVariable(i));
 		}	
 	} else {
@@ -491,13 +478,11 @@ selectorvalororeferencia ::=  PARAMETROVALOR IDEN:id
 :}
 |expresion:ex
 {:
-	System.out.println("Estoy en expresion de selector valor referencia" + ex);
 	//Si el tipo es null (es de tipo IDEN)
 	if(ex.getType() == null){
 		ScopeIF scope = scopeManager.getCurrentScope();
 		SymbolTableIF symTable = scope.getSymbolTable();
 		Var var  = new Var (null, ex.getValor());
-		System.out.println("La variable creada en SVR/exp es " + var);
 		RESULT = var;			
 	} else {
 		Var var = new Var (ex.getType(), ex.getValor());
@@ -527,7 +512,6 @@ seccionvariables ::= DECLVARIABLES defvariables:lista
 				+ lista.getVariable(i).getTipo() + " no existe");
 			} else {
 				SymbolVariable simboloVariable = new SymbolVariable(scope, lista.getVariable(i).getValor(), lista.getVariable(i).getType());
-				System.out.println(simboloVariable);
 				symTable.addSymbol(simboloVariable);
 			}			
 		}		
@@ -687,7 +671,6 @@ seccionsubprograma ::=COMIENZOSUBPROGRAMAS  defsubprograma  | epsilon ;
 // Expresiones
 expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 {: 	
-	System.out.println("ESTOY EN MENORQUE. exp1.type = " + exp1.getType() + "exp2.type = " + exp2.getType());
 	if (exp1.getType() == null){
 		semanticErrorManager.semanticFatalError("Error en la comparación entre " + exp1.getValor() + " y " + exp2.getValor()
 		+ ". El parametro " + exp1.getValor() + " no existe");
@@ -700,7 +683,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 
 	//Si los dos tipos son enteros
 	if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
-		System.out.println("Los tipos coinciden");
 		Expresion exp = new Expresion();
 		exp.setType(scopeManager.searchType("LOGICO"));
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -712,16 +694,12 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 		TemporalIF temp2 = exp2.getTemporal();
 		TemporalIF temp = tf.create();
 		
-		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
 		cb.addQuadruples(exp1.getIntermediateCode());
-		System.out.println("Codigo intermedio: " + exp2.getIntermediateCode());	
 		cb.addQuadruples(exp2.getIntermediateCode());
 		
 		cb.addQuadruple("LS", temp, temp1, temp2);
 		exp.setTemporal(temp);
 		exp.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());	
 		RESULT = exp;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación. Tipo de " + exp1.getValor() + ": " + exp1.getType().getName() + ", tipo de " + exp2.getValor() + ": " + exp2.getType().getName());	
@@ -729,7 +707,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :} 
 |  expresion:exp1 IGUALDAD expresion:exp2
 {: 
-	System.out.println("ESTOY EN IGUALDAD. exp1.type = " + exp1.getType() + "exp2.type = " + exp2.getType());
 	if (exp1.getType() == null){
 		semanticErrorManager.semanticFatalError("Error en la comparación entre " + exp1.getValor() + " y " + exp2.getValor()
 		+ ". El parametro " + exp1.getValor() + " no existe");
@@ -742,7 +719,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 
 	//Si los dos tipos son enteros
 	if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
-		System.out.println("Los tipos coinciden");
 		Expresion exp = new Expresion();
 		exp.setType(scopeManager.searchType("LOGICO"));
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -754,16 +730,12 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 		TemporalIF temp2 = exp2.getTemporal();
 		TemporalIF temp = tf.create();
 		
-		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
 		cb.addQuadruples(exp1.getIntermediateCode());
-		System.out.println("Codigo intermedio: " + exp2.getIntermediateCode());	
 		cb.addQuadruples(exp2.getIntermediateCode());
 		
 		cb.addQuadruple("EQ", temp, temp1, temp2);
 		exp.setTemporal(temp);
 		exp.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());	
 		RESULT = exp;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de comparación. Tipo de " + exp1.getValor() + ": " + exp1.getType().getName() + ", tipo de " + exp2.getValor() + ": " + exp2.getType().getName());	
@@ -779,13 +751,10 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 
 	//Si el símbolo no existe (está declarándose)
 	if(!(scopeManager.containsSymbol(id.getLexema()))){
-		System.out.println("ESTOY EN IF DE CONFLICTO" + id.getLexema());
 		RESULT = exp;
 	} else {
 		//Poner el tipo
-		System.out.println("ESTOY EN ELSE DE CONFLICTO" + id.getLexema());
 		exp.setType(scopeManager.searchSymbol(id.getLexema()).getType());
-		System.out.println("Estoy en EXP/ID " + id.getLexema());
 		ScopeIF scope = scopeManager.getCurrentScope();
 	
 		//Código intermedio
@@ -794,11 +763,9 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 		TemporalIF temp = tf.create();
 		SymbolIF simbolo = scopeManager.searchSymbol(id.getLexema());
 		if (simbolo instanceof SymbolConstant) {
-			System.out.println("ES UNA CONSTANTE " + id.getLexema());
 			int valor = Integer.parseInt(((SymbolConstant)simbolo).getValor());
 			cb.addQuadruple("MV", temp, valor);
 		} else if (simbolo instanceof SymbolVariable) {
-			System.out.println("ES UNA VARIABLE " + id.getLexema());
 			Variable var = new Variable(id.getLexema(), simbolo.getScope());
 			cb.addQuadruple("MVP", temp, var);
 		} else if (simbolo instanceof SymbolParameter){
@@ -809,8 +776,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 		}
 		exp.setTemporal(temp);
 		exp.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado (opcional)
-		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
 		RESULT = exp;
 	}		
 :}  
@@ -823,10 +788,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	Expresion exp = new Expresion();
 	exp.setValor("1");
 	exp.setType(scopeManager.searchType("LOGICO"));
-	
-	System.out.println("Estoy en EXP/CIERTO");
-	
-	System.out.println("Iniciando código intermedio...");
 	
 	//Recuperamos el ámbito en el que nos encontramos
 	ScopeIF scope = scopeManager.getCurrentScope();
@@ -848,9 +809,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	
 	//Añadimos el código intermedio generado al objeto de la clase Expresion
 	exp.setIntermediateCode(cb.create());
-	
-	//Printamos el código intermedio generado (opcional)
-	System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
 	RESULT = exp;
 :}   
 | FALSO
@@ -858,10 +816,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	Expresion exp = new Expresion();
 	exp.setValor("0");
 	exp.setType(scopeManager.searchType("LOGICO"));
-	
-	System.out.println("Estoy en EXP/FALSO");
-	
-	System.out.println("Iniciando código intermedio...");
 	
 	//Recuperamos el ámbito en el que nos encontramos
 	ScopeIF scope = scopeManager.getCurrentScope();
@@ -883,9 +837,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	
 	//Añadimos el código intermedio generado al objeto de la clase Expresion
 	exp.setIntermediateCode(cb.create());
-	
-	//Printamos el código intermedio generado (opcional)
-	System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
 	RESULT = exp;
 :}   
 | miembrovector:exp 
@@ -897,9 +848,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	Expresion exp = new Expresion();
 	exp.setValor(num.getLexema());
 	exp.setType(scopeManager.searchType("ENTERO"));
-	System.out.println("Estoy en EXP/NUM " + num.getLexema());
-	
-	System.out.println("Iniciando código intermedio...");
 	
 	//Recuperamos el ámbito en el que nos encontramos
 	ScopeIF scope = scopeManager.getCurrentScope();
@@ -923,9 +871,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	//Añadimos el código intermedio generado al objeto de la clase Expresion
 	exp.setIntermediateCode(cb.create());
 	
-	//Printamos el código intermedio generado (opcional)
-	System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
-	
 	RESULT = exp;
 :}    
 | expresionlvl2:exp
@@ -934,7 +879,6 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 :} ;
 expresionlvl2 ::=  expresion:exp1 SUMA expresion:exp2 
 {:
-	System.out.println("ESTOY EN SUMA. exp1.type = " + exp1.getType() + "exp2.type = " + exp2.getType());
 	if (exp1.getType() == null){
 		semanticErrorManager.semanticFatalError("Error en la suma entre " + exp1.getValor() + " y " + exp2.getValor()
 		+ ". El parametro " + exp1.getValor() + " no existe");
@@ -947,7 +891,6 @@ expresionlvl2 ::=  expresion:exp1 SUMA expresion:exp2
 
 	//Si los dos tipos son enteros
 	if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
-		System.out.println("Los tipos coinciden");
 		Expresion exp = new Expresion();
 		exp.setType(scopeManager.searchType("ENTERO"));
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -958,17 +901,13 @@ expresionlvl2 ::=  expresion:exp1 SUMA expresion:exp2
 		TemporalIF temp1 = exp1.getTemporal();
 		TemporalIF temp2 = exp2.getTemporal();
 		TemporalIF temp = tf.create();
-		
-		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
+
 		cb.addQuadruples(exp1.getIntermediateCode());
-		System.out.println("Codigo intermedio: " + exp2.getIntermediateCode());	
 		cb.addQuadruples(exp2.getIntermediateCode());
 		
 		cb.addQuadruple("ADD", temp, temp1, temp2);
 		exp.setTemporal(temp);
 		exp.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());	
 		RESULT = exp;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de suma. Tipo de " + exp1.getValor() + ": " + exp1.getType().getName() + ", tipo de " + exp2.getValor() + ": " + exp2.getType().getName());	
@@ -981,7 +920,6 @@ expresionlvl2 ::=  expresion:exp1 SUMA expresion:exp2
 
 expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 {:
-	System.out.println("ESTOY EN YLOGICA. exp1.type = " + exp1.getType() + "exp2.type = " + exp2.getType());
 	if (exp1.getType() == null){
 		semanticErrorManager.semanticFatalError("Error en la conjunción entre " + exp1.getValor() + " y " + exp2.getValor()
 		+ ". El parametro " + exp1.getValor() + " no existe");
@@ -993,7 +931,6 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 	}
 	
 	if (exp1.getType().equals(scopeManager.searchType("LOGICO")) && exp2.getType().equals(scopeManager.searchType("LOGICO"))){
-		System.out.println("ESTOY EN YLOGICA. Los tipos conciden");
 		Expresion exp = new Expresion();
 		exp.setType(scopeManager.searchType("LOGICO"));
 		
@@ -1006,16 +943,12 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 		TemporalIF temp2 = exp2.getTemporal();
 		TemporalIF temp = tf.create();
 		
-		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
 		cb.addQuadruples(exp1.getIntermediateCode());
-		System.out.println("Codigo intermedio: " + exp2.getIntermediateCode());	
 		cb.addQuadruples(exp2.getIntermediateCode());
 		
 		cb.addQuadruple("AND", temp, temp1, temp2);
 		exp.setTemporal(temp);
 		exp.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());
 		RESULT = exp;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de conjunción lógica. Los tipos son diferentes: " + exp1.getTipo() + " y " + exp2.getTipo());
@@ -1023,8 +956,6 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 :} 
 |  expresion:exp1 PRODUCTO expresion:exp2 
 {:
-
-	System.out.println("ESTOY EN MULT. exp1.type = " + exp1.getType() + "exp2.type = " + exp2.getType());
 	if (exp1.getType() == null){
 		semanticErrorManager.semanticFatalError("Error en la multiplicación entre " + exp1.getValor() + " y " + exp2.getValor()
 		+ ". El parametro " + exp1.getValor() + " no existe");
@@ -1037,7 +968,6 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 
 	//Si los dos tipos son enteros
 	if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
-		System.out.println("Los tipos coinciden");
 		Expresion exp = new Expresion();
 		exp.setType(scopeManager.searchType("ENTERO"));
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -1049,16 +979,12 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 		TemporalIF temp2 = exp2.getTemporal();
 		TemporalIF temp = tf.create();
 		
-		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
 		cb.addQuadruples(exp1.getIntermediateCode());
-		System.out.println("Codigo intermedio: " + exp2.getIntermediateCode());	
 		cb.addQuadruples(exp2.getIntermediateCode());
 		
 		cb.addQuadruple("MUL", temp, temp1, temp2);
 		exp.setTemporal(temp);
 		exp.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());	
 		RESULT = exp;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en los tipos de la expresion de multiplicación. Tipo de " + exp1.getValor() + ": " + exp1.getType().getName() + ", tipo de " + exp2.getValor() + ": " + exp2.getType().getName());
@@ -1071,13 +997,11 @@ expresionlvl3 ::=  expresion:exp1 YLOGICA expresion:exp2
 
 expresionlvl4 ::= NOLOGICO  expresion:exp1
 {:
-	System.out.println("ESTOY EN NEGACIÓN. exp1.type = " + exp1.getType());
 	if (exp1.getType() == null){
 		semanticErrorManager.semanticFatalError("Error en la negación de " + exp1.getValor() + ". El parametro " + exp1.getValor() + " no existe");
 	}
 	
 	if (exp1.getType().equals(scopeManager.searchType("LOGICO"))){
-		System.out.println("Los tipos coinciden");
 		Expresion exp = new Expresion();
 		exp.setType(scopeManager.searchType("LOGICO"));
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -1088,14 +1012,11 @@ expresionlvl4 ::= NOLOGICO  expresion:exp1
 		TemporalIF temp1 = exp1.getTemporal();
 		TemporalIF temp = tf.create();
 		
-		System.out.println("Codigo intermedio: " + exp1.getIntermediateCode());	
 		cb.addQuadruples(exp1.getIntermediateCode());
 		
 		cb.addQuadruple("NOT", temp, temp1);
 		exp.setTemporal(temp);
 		exp.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + exp.getIntermediateCode());	
 		RESULT = exp;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en la negación. La expresion negada no es de tipo lógico");
@@ -1152,9 +1073,6 @@ parteizquierdaasignacion ::= IDEN:id
 
 sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasignacion:exp DSENTENCIAS
 {:
-	System.out.println(" Estoy en ASIGNACIÓN, REF = " + ref + ", EXP = " + exp );
-	System.out.println(ref.getIntermediateCode());
-	System.out.println(exp.getIntermediateCode());
 	ScopeIF scope = scopeManager.getCurrentScope();
 	//Comprobación que la referencia existe en las tablas de símbolos de los ámbitos abiertos 
 	//y que es una variable o parámetro de subprograma
@@ -1174,15 +1092,16 @@ sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasign
 			cb.addQuadruples(exp.getIntermediateCode());
 			//Creamos una nueva Variable
 			SymbolIF sV = scopeManager.searchSymbol(ref.getValor());
+			System.out.println("Símbolo " + sV);
 			Variable var = new Variable(ref.getValor(), sV.getScope());
+			System.out.println("Sentencia de asignación variable " + var);
+			//System.out.println("Dirección " + var.getAddress());
 			//creamos la cuadrupla que almacenará en un temporal la variable creada
 			cb.addQuadruple("MVA", temp, var);
 			//creamos la cuadrupla que almacenará el valor del temporal de la expresión en el temporal de la variable.
 			cb.addQuadruple("STP", temp, expTemp);
 			//añadimos el código intermedio generado al objeto de la clase ExpresionAsignacion
 			s.setIntermediateCode(cb.create());
-			//printamos el código intermedio generado (opcional)
-			System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 			RESULT = s;				
 		} else {
 			semanticErrorManager.semanticFatalError("El tipo de " +ref.getValor()+ " y de " +exp.getValor()+" son incompatibles");
@@ -1194,7 +1113,6 @@ sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasign
 
 parametroasignacion ::= expresion:ex
 {:
-	System.out.println("Estoy en el parámetro de la expresión " + ex.getValor() + " con type " + ex.getType());
 	if (ex.getType() == null){
 		semanticErrorManager.semanticFatalError("El parametro de asignacion " + ex.getValor()+ " no está declarada");
 	} else {
@@ -1279,6 +1197,7 @@ listaSentencias ::= sentencia:s  listaSentencias:ls
 	cb.addQuadruples (s.getIntermediateCode());
 	cb.addQuadruples (ls.getIntermediateCode());
 	ns.setIntermediateCode (cb.create ());
+	System.out.println("CI lista sentencias "+ ns.getIntermediateCode());
 	RESULT = ns;	
 :}
 | epsilon
@@ -1309,9 +1228,7 @@ listaSentenciasFuncion ::= sentenciaFuncion:s listaSentenciasFuncion:ls
 // if
 sentenciaif ::= COMIENZOSI expresion:exp STARTIF DELIMFUNC listaSentencias:s1 rellenoif:s2 FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS
 {:	
-	System.out.println("Estoy en el if " + exp);
 	if(exp.getType().equals(scopeManager.searchType("LOGICO"))){
-		System.out.println("Es de tipo lógico");
 		Sentencia s = new Sentencia();
 		
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -1328,8 +1245,6 @@ sentenciaif ::= COMIENZOSI expresion:exp STARTIF DELIMFUNC listaSentencias:s1 re
 		cb.addQuadruples(s2.getIntermediateCode()); 						//añadir código sentencias parte Else
 		cb.addQuadruple("INL", l2); 										// insertar etiqueta l2
 		s.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 		RESULT = s;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en la expresión, debe ser de tipo lógico y es de tipo: " + exp.getTipo());
@@ -1338,9 +1253,7 @@ sentenciaif ::= COMIENZOSI expresion:exp STARTIF DELIMFUNC listaSentencias:s1 re
 :};
 sentenciaifFuncion ::= COMIENZOSI expresion:exp  STARTIF DELIMFUNC listaSentenciasFuncion:s1 rellenoifFuncion:s2  FINBLOQUESENTENCIAS COMIENZOSI DSENTENCIAS 
 {:	
-	System.out.println("Estoy en el if " + exp);
 	if(exp.getType().equals(scopeManager.searchType("LOGICO"))){
-		System.out.println("Es de tipo lógico");
 		Sentencia s = new Sentencia();
 		
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -1358,8 +1271,6 @@ sentenciaifFuncion ::= COMIENZOSI expresion:exp  STARTIF DELIMFUNC listaSentenci
 		cb.addQuadruples(s2.getIntermediateCode()); 						//añadir código sentencias parte Else
 		cb.addQuadruple("INL", l2); 										// insertar etiqueta l2
 		s.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 		RESULT = s;
 	} else {
 		semanticErrorManager.semanticFatalError("Error en la expresión, debe ser de tipo lógico y es de tipo: " + exp.getTipo());
@@ -1368,7 +1279,6 @@ sentenciaifFuncion ::= COMIENZOSI expresion:exp  STARTIF DELIMFUNC listaSentenci
 
 rellenoifFuncion ::=  ALTERNATIVASI DELIMFUNC  listaSentenciasFuncion:ls
 {:
-	System.out.println("Estoy en el else Función (SINO)");
 	RESULT = ls;
 :}
 | epsilon 
@@ -1381,7 +1291,6 @@ rellenoifFuncion ::=  ALTERNATIVASI DELIMFUNC  listaSentenciasFuncion:ls
 
 rellenoif ::=  ALTERNATIVASI DELIMFUNC  listaSentencias:ls
 {:
-	System.out.println("Estoy en el else (SINO)");
 	RESULT = ls;
 :}
 | epsilon
@@ -1437,7 +1346,6 @@ sentenciaforFuncion ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 
 // Escribir 
 parametroEscribir ::= STRING:string
 {:
-	System.out.println("Estoy en parametroEscribir" + string);
 	Expresion exp = new Expresion ();
 	exp.setTipo("cadena");
 	exp.setValor(string.getLexema());
@@ -1445,23 +1353,19 @@ parametroEscribir ::= STRING:string
 	
 :} 
 | expresion:exp
-{:
+{:	System.out.println("CI exp "+ exp.getIntermediateCode());
 	RESULT = exp;
 :}
  | epsilon:ep
  {:
-	System.out.println("ESTOY EN EPSILON");
  	Expresion exp = new Expresion();
 	exp.setTipo("cadena");
  	RESULT = exp;
  :};
 sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO DSENTENCIAS
 {:	
-	System.out.println("Estoy en SENTENCIA ESCRIBIR" + parametro);
-	
 	//Si es cadena
 	if(parametro.getTipo() == "cadena") {
-		System.out.println("Es de tipo cadena");
 		Sentencia s = new Sentencia();
 		ScopeIF scope = scopeManager.getCurrentScope();
 		TemporalFactory tF = new TemporalFactory(scope);
@@ -1474,8 +1378,6 @@ sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO D
 		//Guardamos la cuadrupla de la cadena de caracteres en "listaCadenas" la cual recuperaremos al finalizar el programa principal
 		listaCadenas.add(new Quadruple("CADENA", new Label(texto), lb));
 		s.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + s.getIntermediateCode());
 		RESULT = s;
 	}
 
@@ -1486,14 +1388,13 @@ sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO D
 
 	//Si es de tipo entero es correcta
 	else if (parametro.getType().equals(scopeManager.searchType("ENTERO"))) {
-		System.out.println("Es de tipo ENTERO..");
 		Sentencia s = new Sentencia();
 		ScopeIF scope = scopeManager.getCurrentScope();
 		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		cb.addQuadruples(parametro.getIntermediateCode());
 		cb.addQuadruple("PRINTE", parametro.getTemporal());
 		s.setIntermediateCode(cb.create());
-		//printamos el código intermedio generado
-		System.out.println("Codigo intermedio: " + s.getIntermediateCode());
+		System.out.println("CI PRINTE " + s.getIntermediateCode());
 		RESULT = s;
 	} 
 
@@ -1502,11 +1403,8 @@ sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO D
 // Devolver
 sentenciaDevolver ::= FRETURN expresion:exp DSENTENCIAS
 {:
-	System.out.println("Estoy en RETURN " + exp);
 	Sentencia s = new Sentencia();
-	System.out.println(s);
 	s.setType(exp.getType());
-	System.out.println(s);
 	RESULT = s;
 :};
 

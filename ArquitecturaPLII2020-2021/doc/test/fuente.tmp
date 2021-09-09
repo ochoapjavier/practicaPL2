@@ -4,6 +4,13 @@ MOVE #0,/65535
 MOVE #0,/65534
 ;Quadruple - [VARGLOBAL z, 0, null]
 MOVE #0,/65533
-;Quadruple - [HALT null, null, null]
-HALT
+;Quadruple - [MV T_0, 10, null]
+MOVE #10,/65532
+;Quadruple - [MV T_1, 7, null]
+MOVE #7,/65531
+;Quadruple - [MUL T_2, T_0, T_1]
+MUL /65532,/65531
+MOVE .A,/65530
+;Quadruple - [PRINTE T_2, null, null]
+WRINT /65530
 

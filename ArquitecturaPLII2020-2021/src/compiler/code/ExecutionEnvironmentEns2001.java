@@ -156,9 +156,12 @@ public class ExecutionEnvironmentEns2001
     	}
     	
     	if(quadruple.getOperation().equals("MVA")) {
+    		System.out.println("Estoy en MVA");
     		StringBuffer b = new StringBuffer();
     		String o1 = operacion(quadruple.getFirstOperand());
+    		System.out.println(o1);
     		String r = operacion(quadruple.getResult());
+    		System.out.println(r);
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("MOVE " + o1 + "," + r);
     		return b.toString();
