@@ -158,12 +158,48 @@ public class ExecutionEnvironmentEns2001
     	if(quadruple.getOperation().equals("MVA")) {
     		System.out.println("Estoy en MVA");
     		StringBuffer b = new StringBuffer();
-    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o1 = operacionComp(quadruple.getFirstOperand());
     		System.out.println(o1);
     		String r = operacion(quadruple.getResult());
     		System.out.println(r);
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
+    	//Quadruple - [STP T_1, T_0, null]
+    	if(quadruple.getOperation().equals("STP")) {
+    		System.out.println("Estoy en STP");
+    		StringBuffer b = new StringBuffer();
+    		//o1 = T_0
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		System.out.println(o1);
+    		//r = T_1
+    		String r = operacion(quadruple.getResult());
+    		System.out.println(r);
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + r+ "," + ".R1" + "\n");
+    		b.append("MOVE " + o1 + "," + "[.R1]");
+    		return b.toString();
+    	}
+    	
+    	/*
+		;Quadruple - [MVP T_9, T_8, null]
+		t8  = 65520
+		MOVE /65519, .R1
+		MOVE [.R1], /65519
+    	 */
+    	if(quadruple.getOperation().equals("MVP")) {
+    		System.out.println("Estoy en MVP");
+    		StringBuffer b = new StringBuffer();
+    		//o1 = T_0
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		System.out.println(o1);
+    		//r = T_1
+    		String r = operacion(quadruple.getResult());
+    		System.out.println(r);
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + o1 + ", " + r);
     		return b.toString();
     	}
     	
@@ -185,6 +221,28 @@ public class ExecutionEnvironmentEns2001
     	if (o instanceof Temporal) {
     		System.out.println("Temporal "+o);
     		return "/" + ((Temporal)o).getAddress();
+    	}
+    	if (o instanceof Label) {
+    		System.out.println("Label "+o);
+    		return  ((Label)o).getName();
+    	}
+    	return null;
+    }
+    
+    public String operacionComp(OperandIF o) {
+    	System.out.println("Estoy en operacion "+o);
+    	if (o instanceof Variable) {
+    		System.out.println("Variable "+o);
+    		System.out.println(((Variable) o).getAddress());
+    		return "#" + ((Variable)o).getAddress();
+    	}
+    	if (o instanceof Value) {
+    		System.out.println("Value "+o);
+    		return "/" + ((Value)o).getValue();
+    	}
+    	if (o instanceof Temporal) {
+    		System.out.println("Temporal "+o);
+    		return "#" + ((Temporal)o).getAddress();
     	}
     	if (o instanceof Label) {
     		System.out.println("Label "+o);
