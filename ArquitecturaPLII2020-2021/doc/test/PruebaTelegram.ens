@@ -1,0 +1,25 @@
+;Cargamos unos valores de prueba en las posiciones iniciales
+PUSH #3
+PUSH #4
+PUSH #6
+PUSH #7
+PUSH #8
+;Movemos la "dirección" 65535 a registro 1. (como MVA)
+MOVE #65535, .R1
+;Movemos el CONTENIDO de la dirección 65535 a R2 (como MVP)
+MOVE [.R1], .R2
+;Imprimimos el contenido de R1 y R2
+WRINT .R1
+WRCHAR #10
+WRINT .R2
+WRCHAR #10
+;Cargamos el contenido de R1 a una dirección (desde MVA a temporal)
+MOVE .R1, /65530
+;Cargamos el contenido de R1 a una dirección (desde MVP a temporal)
+MOVE .R2, /65529
+;Imprimimos el contenido de los temporales
+WRINT /65530
+WRCHAR #10
+WRINT /65529
+WRCHAR #10
+HALT

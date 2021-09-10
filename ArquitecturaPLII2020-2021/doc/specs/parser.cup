@@ -201,13 +201,8 @@ program ::=
 			List<TemporalIF> temporals = scope.getTemporalTable ().getTemporals();
 			for (TemporalIF t: temporals) {
 				if (t instanceof Temporal) {
-					System.out.println("For temporal "+ t);
-					System.out.println(t.getAddress());
 					((Temporal)t).setAddress(direccionEstatica);
-					System.out.println(t.getAddress());
-					System.out.println("Antes direccionEstatica " + direccionEstatica);
 					direccionEstatica = direccionEstatica - ((Temporal)t).getSize();
-					System.out.println("Despues direccionEstatica " + direccionEstatica);
 				}
 			} 	 
 		}
@@ -219,15 +214,18 @@ program ::=
 					if(simbolo instanceof SymbolVariable) {
 						int direccion = ((SymbolVariable)simbolo).getAddress();
 						Variable var = new Variable(simbolo.getName(),simbolo.getScope());
-						System.out.println("Llego aqui ");
-						System.out.println("1. Antes de VARGLOBAL, variable " + var + " dir " + var.getAddress());
 						var.setAddress(direccion);
-						System.out.println("2. Antes de VARGLOBAL, variable " + var + " dir " + var.getAddress());
 						cb.addQuadruple("VARGLOBAL",var,0);
 					}
 				}
 			}
 			cb.addQuadruples(ax.getIntermediateCode());
+			cb.addQuadruple("HALT");  
+			if(scope.getLevel() == 0){
+				for (int i = 0; i < listaCadenas.size(); i++){
+					cb.addQuadruple(listaCadenas.get(i));				
+				}
+			}
 			ax.setIntermediateCode(cb.create());
 		}
 
@@ -249,10 +247,9 @@ program ::=
 axiom ::= defprincipal:df
 {:	
 	System.out.println("AXIOM..." +df.getIntermediateCode());
-	System.out.println(scopeManager.getCurrentScope());
 	ScopeIF scope = scopeManager.getCurrentScope();
 	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);                     
-	cb.addQuadruples(df.getIntermediateCode());                    
+	cb.addQuadruples(df.getIntermediateCode());                  
 	List code = cb.create();
                   
 	Axiom ax = new AxiomImp();
@@ -284,6 +281,7 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	//scopeManager.closeScope();
 DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias:ls FINBLOQUESENTENCIAS FINPROGRAMA
 {:	
+	System.out.println("Estoy al final de defprincipal " +ls.getIntermediateCode());
 	RESULT = ls;
 :};
 
@@ -1092,10 +1090,7 @@ sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasign
 			cb.addQuadruples(exp.getIntermediateCode());
 			//Creamos una nueva Variable
 			SymbolIF sV = scopeManager.searchSymbol(ref.getValor());
-			System.out.println("Símbolo " + sV);
 			Variable var = new Variable(ref.getValor(), sV.getScope());
-			System.out.println("Sentencia de asignación variable " + var);
-			//System.out.println("Dirección " + var.getAddress());
 			//creamos la cuadrupla que almacenará en un temporal la variable creada
 			cb.addQuadruple("MVA", temp, var);
 			//creamos la cuadrupla que almacenará el valor del temporal de la expresión en el temporal de la variable.
@@ -1353,7 +1348,7 @@ parametroEscribir ::= STRING:string
 	
 :} 
 | expresion:exp
-{:	System.out.println("CI exp "+ exp.getIntermediateCode());
+{:	
 	RESULT = exp;
 :}
  | epsilon:ep
@@ -1394,7 +1389,6 @@ sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO D
 		cb.addQuadruples(parametro.getIntermediateCode());
 		cb.addQuadruple("PRINTE", parametro.getTemporal());
 		s.setIntermediateCode(cb.create());
-		System.out.println("CI PRINTE " + s.getIntermediateCode());
 		RESULT = s;
 	} 
 

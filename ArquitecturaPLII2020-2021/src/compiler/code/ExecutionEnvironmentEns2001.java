@@ -120,7 +120,18 @@ public class ExecutionEnvironmentEns2001
     		String r = operacion(quadruple.getResult());
     		System.out.println("resultado de PRINTE" +r);
     		b.append(";" + quadruple.toString() + "\n");
-    		b.append("WRINT " + r);
+    		b.append("WRINT " + r + "\n");
+    		b.append("WRCHAR #10");
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("PRINTC")) {
+    		System.out.println("PRINTC");
+    		StringBuffer b = new StringBuffer();
+    		String op = operacion(quadruple.getFirstOperand());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("WRSTR /" + op + "\n");
+    		b.append("WRCHAR #10");
     		return b.toString();
     	}
     	
@@ -203,19 +214,33 @@ public class ExecutionEnvironmentEns2001
     		return b.toString();
     	}
     	
+    	if(quadruple.getOperation().equals("INL")) {
+            StringBuffer buffer = new StringBuffer();
+            String resultado = operacion(quadruple.getResult());
+            buffer.append(";" + quadruple.toString() + "\n");
+            buffer.append(resultado + ": ");
+            return buffer.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("CADENA")) {
+            StringBuffer buffer = new StringBuffer();
+            String op = operacion(quadruple.getFirstOperand());
+            String r = operacion(quadruple.getResult());
+            buffer.append(";" + quadruple.toString() + "\n");
+            buffer.append(op + ": ");
+            buffer.append("DATA " + r);
+            return buffer.toString();
+          }
+    	
     	
         return quadruple.toString(); 
     }
     
     public String operacion(OperandIF o) {
-    	System.out.println("Estoy en operacion "+o);
     	if (o instanceof Variable) {
-    		System.out.println("Variable "+o);
-    		System.out.println(((Variable) o).getAddress());
     		return "/" + ((Variable)o).getAddress();
     	}
     	if (o instanceof Value) {
-    		System.out.println("Value "+o);
     		return "#" + ((Value)o).getValue();
     	}
     	if (o instanceof Temporal) {
@@ -230,14 +255,10 @@ public class ExecutionEnvironmentEns2001
     }
     
     public String operacionComp(OperandIF o) {
-    	System.out.println("Estoy en operacion "+o);
     	if (o instanceof Variable) {
-    		System.out.println("Variable "+o);
-    		System.out.println(((Variable) o).getAddress());
     		return "#" + ((Variable)o).getAddress();
     	}
     	if (o instanceof Value) {
-    		System.out.println("Value "+o);
     		return "/" + ((Value)o).getValue();
     	}
     	if (o instanceof Temporal) {
@@ -245,7 +266,6 @@ public class ExecutionEnvironmentEns2001
     		return "#" + ((Temporal)o).getAddress();
     	}
     	if (o instanceof Label) {
-    		System.out.println("Label "+o);
     		return  ((Label)o).getName();
     	}
     	return null;

@@ -64,7 +64,6 @@ public class Variable
     {
         // TODO : Student Work
     	int address = 0;
-    	System.out.println("Estoy en getAddress");
     	List<SymbolIF> simbolos = scope.getSymbolTable().getSymbols();
     	for (int i = 0; i < simbolos.size(); i++) {
     		if (simbolos.get(i) instanceof SymbolVariable && simbolos.get(i).getName().equals(this.name)) {

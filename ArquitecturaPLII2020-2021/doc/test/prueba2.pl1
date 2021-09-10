@@ -19,11 +19,11 @@ variables
 		
 comienzo
 	escribir(a*7);
-	x = 3;
+	#x = 3;
 	escribir(x);
-	suma = 3 + 2;
+	#suma = 3 + 2;
 	
-	escribir(suma);
+	#escribir(suma);
 	#x = suma * 4;
 	#para x en 0 .. 10:
 		#escribir(x);
@@ -32,8 +32,10 @@ comienzo
 
 	#x = 10;
 	
-	#escribir("hola");
+	escribir("hola");
 	
+	#z = cierto;
+
 	#si z entonces:
 		#escribir("cierto");
 	#sino:
@@ -42,7 +44,7 @@ comienzo
 
 	#escribir(x);
 	#escribir(a);
-	#escribir("hola");
+	escribir("ADIOOS");
 	#escribir();
 	#escribir(b);
 	
