@@ -120,7 +120,6 @@ public class ExecutionEnvironmentEns2001
     	if(quadruple.getOperation().equals("PRINTE")) {
     		StringBuffer b = new StringBuffer();
     		String r = operacion(quadruple.getResult());
-    		System.out.println("resultado de PRINTE" +r);
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("WRINT " + r + "\n");
     		b.append("WRCHAR #10");
@@ -128,10 +127,8 @@ public class ExecutionEnvironmentEns2001
     	}
     	
     	if(quadruple.getOperation().equals("PRINTC")) {
-    		System.out.println("PRINTC");
     		StringBuffer b = new StringBuffer();
     		String op = operacion(quadruple.getFirstOperand());
-    		System.out.println("primer operando " + op);
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("WRSTR /" + op + "\n");
     		b.append("WRCHAR #10");
@@ -139,7 +136,6 @@ public class ExecutionEnvironmentEns2001
     	}
     	
     	if(quadruple.getOperation().equals("PRINTCV")) {
-    		System.out.println("PRINTCV");
     		StringBuffer b = new StringBuffer();
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("WRCHAR #10");
@@ -199,6 +195,24 @@ public class ExecutionEnvironmentEns2001
     		return b.toString();
     	}
     	
+    	if(quadruple.getOperation().equals("BRF")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("CMP " + r + ", #0" + "\n");
+    		b.append("BZ /" + o1);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("BR")) {
+    		StringBuffer b = new StringBuffer();
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("BR /" + r);
+    		return b.toString();
+    	}
+    	
     	if(quadruple.getOperation().equals("MV")) {
     		StringBuffer b = new StringBuffer();
     		String o1 = operacion(quadruple.getFirstOperand());
@@ -208,13 +222,11 @@ public class ExecutionEnvironmentEns2001
     		return b.toString();
     	}
     	
+    	
     	if(quadruple.getOperation().equals("MVA")) {
-    		System.out.println("Estoy en MVA");
     		StringBuffer b = new StringBuffer();
     		String o1 = operacionComp(quadruple.getFirstOperand());
-    		System.out.println(o1);
     		String r = operacion(quadruple.getResult());
-    		System.out.println(r);
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("MOVE " + o1 + "," + r);
     		return b.toString();
@@ -222,14 +234,11 @@ public class ExecutionEnvironmentEns2001
     	
     	//Quadruple - [STP T_1, T_0, null]
     	if(quadruple.getOperation().equals("STP")) {
-    		System.out.println("Estoy en STP");
     		StringBuffer b = new StringBuffer();
     		//o1 = T_0
     		String o1 = operacion(quadruple.getFirstOperand());
-    		System.out.println(o1);
     		//r = T_1
     		String r = operacion(quadruple.getResult());
-    		System.out.println(r);
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("MOVE " + r+ "," + ".R1" + "\n");
     		b.append("MOVE " + o1 + "," + "[.R1]");
@@ -243,14 +252,11 @@ public class ExecutionEnvironmentEns2001
 		MOVE [.R1], /65519
     	 */
     	if(quadruple.getOperation().equals("MVP")) {
-    		System.out.println("Estoy en MVP");
     		StringBuffer b = new StringBuffer();
     		//o1 = T_0
     		String o1 = operacion(quadruple.getFirstOperand());
-    		System.out.println(o1);
     		//r = T_1
     		String r = operacion(quadruple.getResult());
-    		System.out.println(r);
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("MOVE " + o1 + ", " + r);
     		return b.toString();
@@ -286,11 +292,9 @@ public class ExecutionEnvironmentEns2001
     		return "#" + ((Value)o).getValue();
     	}
     	if (o instanceof Temporal) {
-    		System.out.println("Temporal "+o);
     		return "/" + ((Temporal)o).getAddress();
     	}
     	if (o instanceof Label) {
-    		System.out.println("Label "+o);
     		return  ((Label)o).getName();
     	}
     	return null;
@@ -304,7 +308,6 @@ public class ExecutionEnvironmentEns2001
     		return "/" + ((Value)o).getValue();
     	}
     	if (o instanceof Temporal) {
-    		System.out.println("Temporal "+o);
     		return "#" + ((Temporal)o).getAddress();
     	}
     	if (o instanceof Label) {

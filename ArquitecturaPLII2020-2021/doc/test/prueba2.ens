@@ -4,30 +4,61 @@ MOVE #0,/65535
 MOVE #0,/65534
 ;Quadruple - [VARGLOBAL z, 0, null]
 MOVE #0,/65533
-;Quadruple - [MV T_0, 10, null]
-MOVE #10,/65532
-;Quadruple - [MV T_1, 7, null]
-MOVE #7,/65531
-;Quadruple - [MUL T_2, T_0, T_1]
-MUL /65532,/65531
-MOVE .A,/65530
-;Quadruple - [PRINTE T_2, null, null]
-WRINT /65530
-WRCHAR #10
-;Quadruple - [MVP T_3, x, null]
-MOVE /65534, /65529
-;Quadruple - [PRINTE T_3, null, null]
-WRINT /65529
-WRCHAR #10
-;Quadruple - [PRINTC T_4, L_0, null]
+;Quadruple - [MV T_0, 1, null]
+MOVE #1,/65532
+;Quadruple - [MVA T_1, z, null]
+MOVE #65533,/65531
+;Quadruple - [STP T_1, T_0, null]
+MOVE /65531,.R1
+MOVE /65532,[.R1]
+;Quadruple - [MVP T_2, z, null]
+MOVE /65533, /65530
+;Quadruple - [BRF T_2, L_2, null]
+CMP /65530, #0
+BZ /L_2
+;Quadruple - [PRINTC T_3, L_0, null]
 WRSTR /L_0
 WRCHAR #10
-;Quadruple - [PRINTC T_5, L_1, null]
+;Quadruple - [BR L_3, null, null]
+BR /L_3
+;Quadruple - [INL L_2, null, null]
+L_2: 
+;Quadruple - [PRINTC T_4, L_1, null]
 WRSTR /L_1
 WRCHAR #10
+;Quadruple - [INL L_3, null, null]
+L_3: 
+;Quadruple - [MV T_5, 0, null]
+MOVE #0,/65527
+;Quadruple - [MVA T_6, z, null]
+MOVE #65533,/65526
+;Quadruple - [STP T_6, T_5, null]
+MOVE /65526,.R1
+MOVE /65527,[.R1]
+;Quadruple - [MVP T_7, z, null]
+MOVE /65533, /65525
+;Quadruple - [BRF T_7, L_6, null]
+CMP /65525, #0
+BZ /L_6
+;Quadruple - [PRINTC T_8, L_4, null]
+WRSTR /L_4
+WRCHAR #10
+;Quadruple - [BR L_7, null, null]
+BR /L_7
+;Quadruple - [INL L_6, null, null]
+L_6: 
+;Quadruple - [PRINTC T_9, L_5, null]
+WRSTR /L_5
+WRCHAR #10
+;Quadruple - [INL L_7, null, null]
+L_7: 
 ;Quadruple - [HALT null, null, null]
 HALT
-;Quadruple - [CADENA "hola", L_0, null]
-L_0: DATA "hola"
-;Quadruple - [CADENA "ADIOOS", L_1, null]
-L_1: DATA "ADIOOS"
+;Quadruple - [CADENA "cierto", L_0, null]
+L_0: DATA "cierto"
+;Quadruple - [CADENA "falso", L_1, null]
+L_1: DATA "falso"
+;Quadruple - [CADENA "cierto", L_4, null]
+L_4: DATA "cierto"
+;Quadruple - [CADENA "falso", L_5, null]
+L_5: DATA "falso"

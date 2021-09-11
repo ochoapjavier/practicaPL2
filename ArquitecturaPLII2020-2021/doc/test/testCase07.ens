@@ -57,4 +57,3 @@ L_0: DATA "b es mayor que a"
 L_1: DATA "a es mayor que b"
 ;Quadruple - [CADENA "a y b son iguales", L_2, null]
 L_2: DATA "a y b son iguales"
-

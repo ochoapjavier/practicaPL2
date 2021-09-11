@@ -1,0 +1,6 @@
+;Quadruple - [VARGLOBAL a, 0, null]
+MOVE #0,/65535
+;Quadruple - [VARGLOBAL v, 0, null]
+MOVE #0,/65534
+;Quadruple - [HALT null, null, null]
+HALT

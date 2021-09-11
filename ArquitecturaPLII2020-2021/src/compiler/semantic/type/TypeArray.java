@@ -17,7 +17,7 @@ public class TypeArray
 	private int min;
     private int max;
     private int size;
-    private String tipo;
+    private TypeIF type;
     
 	/**
      * Constructor for TypeArray.
@@ -38,16 +38,24 @@ public class TypeArray
         super (scope, name);
     }
     
-    public TypeArray (ScopeIF scope, String name, int min, int max, String tipo)
+    public TypeArray (ScopeIF scope, String name, int min, int max, TypeIF type)
     {
         super (scope, name);
         this.min = min;
         this.max = max;
-        this.tipo = tipo;
+        this.type =type;
         this.size = max - min + 1;
     }
     
-    public int getMin() {
+    public TypeIF getType() {
+		return type;
+	}
+
+	public void setType(TypeIF type) {
+		this.type = type;
+	}
+
+	public int getMin() {
 		return min;
 	}
 
@@ -61,14 +69,6 @@ public class TypeArray
 
 	public void setMax(int max) {
 		this.max = max;
-	}
-
-	public String getTipo() {
-		return tipo;
-	}
-
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
 	}
 
 	public void setSize(int size) {

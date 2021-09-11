@@ -81,11 +81,14 @@ MOVE /65510,.R1
 MOVE /65511,[.R1]
 ;Quadruple - [MVP T_22, conjuncion, null]
 MOVE /65532, /65509
-Quadruple - [BRF T_22, L_2, null]
+;Quadruple - [BRF T_22, L_2, null]
+CMP /65509, #0
+BZ /L_2
 ;Quadruple - [PRINTC T_23, L_0, null]
 WRSTR /L_0
 WRCHAR #10
-Quadruple - [BR L_3, null, null]
+;Quadruple - [BR L_3, null, null]
+BR /L_3
 ;Quadruple - [INL L_2, null, null]
 L_2: 
 ;Quadruple - [PRINTC T_24, L_1, null]

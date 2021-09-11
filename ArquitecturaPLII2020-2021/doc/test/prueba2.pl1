@@ -18,45 +18,20 @@ variables
 	#fin;	
 		
 comienzo
-	escribir(a*7);
-	#x = 3;
-	escribir(x);
-	#suma = 3 + 2;
-	
-	#escribir(suma);
-	#x = suma * 4;
-	#para x en 0 .. 10:
-		#escribir(x);
+	z = cierto;
 
-	#fin para;
-
-	#x = 10;
+	si z entonces:
+		escribir("cierto");
+	sino:
+		escribir("falso");
+	fin si;		
 	
-	escribir("hola");
+	z = falso;
 	
-	#z = cierto;
-
-	#si z entonces:
-		#escribir("cierto");
-	#sino:
-		#escribir(a);
-	#fin si;	
-
-	#escribir(x);
-	#escribir(a);
-	escribir("ADIOOS");
-	#escribir();
-	#escribir(b);
-	
-	#z = falso;
-	#z = cierto;
-	#z = a < 20;
-	#z = a == 10;
-	#z = a == b;
-	#x = a;
-	#x = 5;
-	#suma = x + 5;
-	#x = cierto;
-	#x = b;
+	si z entonces:
+		escribir("cierto");
+	sino:
+		escribir("falso");
+	fin si;	
 
 fin.
