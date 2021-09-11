@@ -166,17 +166,21 @@ public class ExecutionEnvironmentEns2001
     	
     	if(quadruple.getOperation().equals("LS")) {
     		StringBuffer b = new StringBuffer();
+    		System.out.println("LS");
     		String o1 = operacion(quadruple.getFirstOperand());
+    		System.out.println(o1);
     		String o2 = operacion(quadruple.getSecondOperand());
+    		System.out.println(o2);
     		String r = operacion(quadruple.getResult());
+    		System.out.println(r);
     		Label cierto = (Label) lf.create();
     		Label falso = (Label) lf.create();
     		b.append(";" + quadruple.toString() + "\n");
-    		b.append("CMP " + o1 + "," + o2 + "\n");
+    		b.append("SUB " + o1 + "," + o2 + "\n");
     		b.append("BN /" + cierto + "\n");
-    		b.append("MOVE #0 ," + r + "\n");
+    		b.append("MOVE #1 ," + r + "\n");
     		b.append("BR /" + falso + "\n");
-    		b.append(cierto + ": MOVE #1," + r + "\n");
+    		b.append(cierto + ": MOVE #0," + r + "\n");
     		b.append(falso + ": NOP" + "\n");
     		
 
@@ -205,11 +209,48 @@ public class ExecutionEnvironmentEns2001
     		return b.toString();
     	}
     	
+    	if(quadruple.getOperation().equals("PRUEBA")) {
+    		StringBuffer b = new StringBuffer();
+    		//O1 = l2
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		//r = temp2
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("SUB " + r + "," + o1 + "\n");
+    		b.append("BZ /" + o1);
+    		return b.toString();
+    	}
+    	
     	if(quadruple.getOperation().equals("BR")) {
     		StringBuffer b = new StringBuffer();
     		String r = operacion(quadruple.getResult());
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("BR /" + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("CMP")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("CMP " + r + "," + o1);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("BN")) {
+    		StringBuffer b = new StringBuffer();
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("BN /" + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("INC")) {
+    		StringBuffer b = new StringBuffer();
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("INC " + r);
     		return b.toString();
     	}
     	
@@ -266,7 +307,8 @@ public class ExecutionEnvironmentEns2001
             StringBuffer buffer = new StringBuffer();
             String resultado = operacion(quadruple.getResult());
             buffer.append(";" + quadruple.toString() + "\n");
-            buffer.append(resultado + ": ");
+            buffer.append(resultado + ": " + "\n");
+            buffer.append("NOP");
             return buffer.toString();
     	}
     	

@@ -3,11 +3,11 @@ MOVE #10,/65535
 ;Quadruple - [MV T_1, 20, null]
 MOVE #20,/65534
 ;Quadruple - [LS T_2, T_0, T_1]
-CMP /65535,/65534
+SUB /65535,/65534
 BN /L_7
-MOVE #0 ,/65533
+MOVE #1 ,/65533
 BR /L_8
-L_7: MOVE #1,/65533
+L_7: MOVE #0,/65533
 L_8: NOP
 MOVE .A,/65533
 ;Quadruple - [BRF T_2, L_5, null]
@@ -20,16 +20,17 @@ WRCHAR #10
 BR /L_6
 ;Quadruple - [INL L_5, null, null]
 L_5: 
+NOP
 ;Quadruple - [MV T_4, 20, null]
 MOVE #20,/65531
 ;Quadruple - [MV T_5, 10, null]
 MOVE #10,/65530
 ;Quadruple - [LS T_6, T_4, T_5]
-CMP /65531,/65530
+SUB /65531,/65530
 BN /L_9
-MOVE #0 ,/65529
+MOVE #1 ,/65529
 BR /L_10
-L_9: MOVE #1,/65529
+L_9: MOVE #0,/65529
 L_10: NOP
 MOVE .A,/65529
 ;Quadruple - [BRF T_6, L_3, null]
@@ -42,13 +43,16 @@ WRCHAR #10
 BR /L_4
 ;Quadruple - [INL L_3, null, null]
 L_3: 
+NOP
 ;Quadruple - [PRINTC T_8, L_2, null]
 WRSTR /L_2
 WRCHAR #10
 ;Quadruple - [INL L_4, null, null]
 L_4: 
+NOP
 ;Quadruple - [INL L_6, null, null]
 L_6: 
+NOP
 ;Quadruple - [HALT null, null, null]
 HALT
 ;Quadruple - [CADENA "b es mayor que a", L_0, null]

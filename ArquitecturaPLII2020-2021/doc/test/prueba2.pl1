@@ -1,37 +1,14 @@
-programa uno:
-constantes
+# programa con condicional
+programa siete:
+	constantes
 		a = 10;
-		b = cierto;
-		
+		b = 20;
+	variables
+		x : entero;
 	
-variables
-	x , suma: entero;
-	z: booleano;
-
-#subprogramas
-	
-	#funcion ejFuncion2 (g,h : entero): entero:
-		#variables sum: entero;
-		#comienzo
-			#sum = g + h;
-			#devolver sum;
-	#fin;	
-		
 comienzo
-	z = cierto;
 
-	si z entonces:
-		escribir("cierto");
-	sino:
-		escribir("falso");
-	fin si;		
-	
-	z = falso;
-	
-	si z entonces:
-		escribir("cierto");
-	sino:
-		escribir("falso");
-	fin si;	
-
+	escribir (x);
+	x = 3;
+	escribir (x);
 fin.

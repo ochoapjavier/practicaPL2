@@ -280,7 +280,6 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	//scopeManager.closeScope();
 DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias:ls FINBLOQUESENTENCIAS FINPROGRAMA
 {:	
-	System.out.println("Def princiapl");
 	RESULT = ls;
 :};
 
@@ -373,7 +372,6 @@ tipovector ::= BOOLEANO
 //[3]
 valorango ::= NUM:n
 {: 	
-	System.out.println("Estoy en valorango " + n);
 	Expresion exp = new Expresion(scopeManager.searchType("ENTERO"), n.getLexema());
 	//Recuperamos el ámbito en el que nos encontramos
 	ScopeIF scope = scopeManager.getCurrentScope();
@@ -391,7 +389,6 @@ valorango ::= NUM:n
 	exp.setTemporal(temp);
 	//Añadimos el código intermedio generado al objeto de la clase Expresion
 	exp.setIntermediateCode(cb.create());
-	System.out.println("CI valorango " + exp.getIntermediateCode());
 	RESULT = exp;	
 :} 
 
@@ -421,7 +418,6 @@ valorango ::= NUM:n
 //[v1[2]]
 | miembrovector:r
 {:	
-	System.out.println("Miembro vector no tentiendo" );
 	//Constante c = new Constante(r.getTipo(), r.getValor());
 	//RESULT = c;	
 :};
@@ -649,10 +645,8 @@ funcion ::= DECLAREFUNCION IDEN:id PIZQUIERDO defvariables:lista PDERECHO DELIMF
 			} else {			
 				//Introducimos en la tabla de símbolos la variable con su ámbito, nombre, tipo y valor
 				TypeTableIF typeTableF = scopeF.getTypeTable();
-				System.out.println("Variable" + lista.getVariable(i));
 				//TypeIF type = scopeManager.searchType(lista.getVariable(i).getTipo());			
 
-				
 				SymbolParameter parametro = new SymbolParameter(scopeF, lista.getVariable(i).getValor(), lista.getVariable(i).getType());
 				symTableF.addSymbol(parametro);	
 				TypeFunction funcion = (TypeFunction)scopeManager.searchType(scopeF.getName());
@@ -1048,11 +1042,9 @@ expresionlvl5 ::= PIZQUIERDO expresion:exp PDERECHO
 //v1[2]
 miembrovector::= IDEN:id CIZQUIERDO valorango:valor CDERECHO
 {: 
-	System.out.println("Estoy en EXPRESION/miembrovector " + id.getLexema());
 	if(scopeManager.searchSymbol(id.getLexema()) == null) {
 		semanticErrorManager.semanticFatalError("El vector " + id.getLexema() + " no está declarado");	
 	} else {
-		System.out.println("Estoy en el else " );
 		Expresion exp = new Expresion();
 		exp.setValor(id.getLexema());
 		ScopeIF scope = scopeManager.getCurrentScope();
@@ -1072,8 +1064,6 @@ miembrovector::= IDEN:id CIZQUIERDO valorango:valor CDERECHO
 		cb.addQuadruple("MVP", temp, temp3);
 		exp.setTemporal(temp);
 		exp.setIntermediateCode(cb.create());
-		System.out.println("CI miembrovector" + exp.getIntermediateCode());
-		System.out.println(exp);
 		RESULT = exp;
 	}
 :};
@@ -1102,7 +1092,6 @@ parteizquierdaasignacion ::= IDEN:id
 		semanticErrorManager.semanticFatalError("La referencia " + exp.getValor() + " no está declarada");	
 	} else {
 		Expresion ex = new Expresion (scopeManager.searchSymbol(exp.getValor()).getType(), exp.getValor());
-		System.out.println("Result miembrovector " + ex);
 		TypeArray array = (TypeArray)ex.getType();
 		//System.out.println(array.getType());
 		ex.setType(array.getType());
@@ -1112,7 +1101,6 @@ parteizquierdaasignacion ::= IDEN:id
 
 sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasignacion:exp DSENTENCIAS
 {:
-	System.out.println("ASIGN " + ref + " -- " + exp);
 	ScopeIF scope = scopeManager.getCurrentScope();
 	//Comprobación que la referencia existe en las tablas de símbolos de los ámbitos abiertos 
 	//y que es una variable o parámetro de subprograma
@@ -1169,7 +1157,6 @@ llamadafuncion ::= IDEN:id PIZQUIERDO parametrofuncionoproc:parametros PDERECHO
 {:
 	TypeProcedure funcion = (TypeProcedure) (scopeManager.searchType(id.getLexema()));
 	boolean error = true;
-	System.out.println("llamada");
 	if (funcion.getListaParametros().size() == parametros.size()){	
 		for (int i = 0; i < parametros.size(); i++) {
 			if(parametros.getListaVariables().get(i).getTipo() == null){
@@ -1177,7 +1164,6 @@ llamadafuncion ::= IDEN:id PIZQUIERDO parametrofuncionoproc:parametros PDERECHO
 			}
 
 			if(funcion.getListaParametros().get(i).getType().getName() == parametros.getListaVariables().get(i).getTipo()){
-				System.out.println("Estoy en llamadafuncion");
 				error = false;				
 
 			} else {
@@ -1200,7 +1186,6 @@ llamadafuncion ::= IDEN:id PIZQUIERDO parametrofuncionoproc:parametros PDERECHO
  
 sentenciallamadafuncion ::= llamadafuncion:ll DSENTENCIAS
 {:	
-	System.out.println("Estoy en sentencia llamada " +ll);
 	Sentencia s = new Sentencia();
 	s.setValor(ll.getValor());
 	RESULT = s;
@@ -1222,7 +1207,6 @@ sentencia ::= sentenciadeasignacion:sa
 :}
 | sentenciaEscribir:se
 {:
-	System.out.println("Sentencia...");
 	RESULT = se;
 :}
 | sentenciallamadafuncion:slf
@@ -1364,14 +1348,33 @@ rellenoif ::=  ALTERNATIVASI DELIMFUNC  listaSentencias:ls
 
 	fin para; 
 */
-sentenciafor ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 RANGO expresion:exp2 DELIMFUNC listaSentencias FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS
+sentenciafor ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 RANGO expresion:exp2 DELIMFUNC listaSentencias:ls FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS
 {:
 	if(scopeManager.containsSymbol(id.getLexema())){
 		if(scopeManager.searchSymbol(id.getLexema()).getType().getName() == "ENTERO"){
 			if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
-				System.out.println("Estoy en el for, las expresiones son enteras");
 				Sentencia s = new Sentencia();
+				LabelFactory lF= new LabelFactory();
+				LabelIF l1 = lF.create(); 											//Etiqueta de comienzo parte Else
+				LabelIF l2 = lF.create(); 
+				TemporalIF temp1 = exp1.getTemporal();	
+				TemporalIF temp2 = exp2.getTemporal();
+				SymbolIF simboloIndice = scopeManager.searchSymbol(id.getLexema()); 
+				Variable var = new Variable(id.getLexema(), simboloIndice.getScope());
+				ScopeIF scope = scopeManager.getCurrentScope();
+				IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+				cb.addQuadruple("MV", var, temp1);
+				cb.addQuadruple("INL", l1);
+				cb.addQuadruples(exp2.getIntermediateCode());
+				cb.addQuadruple("CMP", temp2, var);
+				cb.addQuadruple("BN",l2);
+				cb.addQuadruples(ls.getIntermediateCode());
+				cb.addQuadruple("INC", var); 
+				cb.addQuadruple("BR", l1);
+				cb.addQuadruple("INL", l2);
+				s.setIntermediateCode(cb.create());
 				RESULT = s;
+			
 			} else {
 				semanticErrorManager.semanticFatalError("Error en los tipos de las expresiones. El tipo de la expresion de comienzo es " + exp1.getTipo() + " y el de la final es " + exp2.getTipo());
 			}
@@ -1382,13 +1385,33 @@ sentenciafor ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 RANGO e
 		semanticErrorManager.semanticFatalError("El índice " + id.getLexema() + " no está declarado");
 	}
 :};
-sentenciaforFuncion ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 RANGO expresion:exp2 DELIMFUNC listaSentenciasFuncion FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS
+sentenciaforFuncion ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 RANGO expresion:exp2 DELIMFUNC listaSentenciasFuncion:ls FINBLOQUESENTENCIAS COMIENZOBUCLEPARA DSENTENCIAS
 {:
 	if(scopeManager.containsSymbol(id.getLexema())){
 		if(scopeManager.searchSymbol(id.getLexema()).getType().getName() == "ENTERO"){
-			if (exp1.getTipo() == "ENTERO" && exp2.getTipo() == "ENTERO"){
+			if (exp1.getType().equals(scopeManager.searchType("ENTERO")) && exp2.getType().equals(scopeManager.searchType("ENTERO"))){
 				Sentencia s = new Sentencia();
+				LabelFactory lF= new LabelFactory();
+				LabelIF l1 = lF.create(); 											//Etiqueta de comienzo parte Else
+				LabelIF l2 = lF.create(); 
+				TemporalIF temp1 = exp1.getTemporal();	
+				TemporalIF temp2 = exp2.getTemporal();
+				SymbolIF simboloIndice = scopeManager.searchSymbol(id.getLexema()); 
+				Variable var = new Variable(id.getLexema(), simboloIndice.getScope());
+				ScopeIF scope = scopeManager.getCurrentScope();
+				IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+				cb.addQuadruple("MV", var, temp1);
+				cb.addQuadruple("INL", l1);
+				cb.addQuadruples(exp2.getIntermediateCode());
+				cb.addQuadruple("CMP", temp2, var);
+				cb.addQuadruple("BN",l2);
+				cb.addQuadruples(ls.getIntermediateCode());
+				cb.addQuadruple("INC", var); 
+				cb.addQuadruple("BR", l1);
+				cb.addQuadruple("INL", l2);
+				s.setIntermediateCode(cb.create());
 				RESULT = s;
+			
 			} else {
 				semanticErrorManager.semanticFatalError("Error en los tipos de las expresiones. El tipo de la expresion de comienzo es " + exp1.getTipo() + " y el de la final es " + exp2.getTipo());
 			}
