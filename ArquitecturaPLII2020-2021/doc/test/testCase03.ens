@@ -1,1 +1,12 @@
-Quadruple - [PRINTE T_2, null, null]
+;Quadruple - [MV T_0, 8, null]
+MOVE #8,/65535
+;Quadruple - [MV T_1, 2, null]
+MOVE #2,/65534
+;Quadruple - [ADD T_2, T_0, T_1]
+ADD /65535,/65534
+MOVE .A,/65533
+;Quadruple - [PRINTE T_2, null, null]
+WRINT /65533
+WRCHAR #10
+;Quadruple - [HALT null, null, null]
+HALT

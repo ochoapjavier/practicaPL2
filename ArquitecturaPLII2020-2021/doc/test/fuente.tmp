@@ -1,15 +1,13 @@
-;Quadruple - [PRINTC T_0, L_0, null]
-WRSTR /L_0
-WRCHAR #10
-;Quadruple - [PRINTCV T_1, null, null]
-WRCHAR #10
-;Quadruple - [PRINTC T_2, L_1, null]
-WRSTR /L_1
+;Quadruple - [MV T_0, 8, null]
+MOVE #8,/65535
+;Quadruple - [MV T_1, 2, null]
+MOVE #2,/65534
+;Quadruple - [ADD T_2, T_0, T_1]
+ADD /65535,/65534
+MOVE .A,/65533
+;Quadruple - [PRINTE T_2, null, null]
+WRINT /65533
 WRCHAR #10
 ;Quadruple - [HALT null, null, null]
 HALT
-;Quadruple - [CADENA "hola", L_0, null]
-L_0: DATA "hola"
-;Quadruple - [CADENA "mundo", L_1, null]
-L_1: DATA "mundo"
 

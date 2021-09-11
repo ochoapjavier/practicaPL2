@@ -1,0 +1,101 @@
+;Quadruple - [VARGLOBAL suma, 0, null]
+MOVE #0,/65535
+;Quadruple - [VARGLOBAL resultado, 0, null]
+MOVE #0,/65534
+;Quadruple - [VARGLOBAL resultadoLogico, 0, null]
+MOVE #0,/65533
+;Quadruple - [VARGLOBAL conjuncion, 0, null]
+MOVE #0,/65532
+;Quadruple - [MV T_0, 10, null]
+MOVE #10,/65531
+;Quadruple - [MV T_1, 20, null]
+MOVE #20,/65530
+;Quadruple - [ADD T_2, T_0, T_1]
+ADD /65531,/65530
+MOVE .A,/65529
+;Quadruple - [MVA T_3, suma, null]
+MOVE #65535,/65528
+;Quadruple - [STP T_3, T_2, null]
+MOVE /65528,.R1
+MOVE /65529,[.R1]
+;Quadruple - [MVP T_4, suma, null]
+MOVE /65535, /65527
+;Quadruple - [MV T_5, 10, null]
+MOVE #10,/65526
+;Quadruple - [MUL T_6, T_4, T_5]
+MUL /65527,/65526
+MOVE .A,/65525
+;Quadruple - [MV T_7, 4, null]
+MOVE #4,/65524
+;Quadruple - [ADD T_8, T_6, T_7]
+ADD /65525,/65524
+MOVE .A,/65523
+;Quadruple - [MVA T_9, resultado, null]
+MOVE #65534,/65522
+;Quadruple - [STP T_9, T_8, null]
+MOVE /65522,.R1
+MOVE /65523,[.R1]
+;Quadruple - [MVP T_10, suma, null]
+MOVE /65535, /65521
+;Quadruple - [PRINTE T_10, null, null]
+WRINT /65521
+WRCHAR #10
+;Quadruple - [MVP T_11, resultado, null]
+MOVE /65534, /65520
+;Quadruple - [PRINTE T_11, null, null]
+WRINT /65520
+WRCHAR #10
+;Quadruple - [MV T_12, 1, null]
+MOVE #1,/65519
+;Quadruple - [MV T_13, 0, null]
+MOVE #0,/65518
+;Quadruple - [AND T_14, T_12, T_13]
+AND /65519,/65518
+MOVE .A,/65517
+;Quadruple - [MVA T_15, conjuncion, null]
+MOVE #65532,/65516
+;Quadruple - [STP T_15, T_14, null]
+MOVE /65516,.R1
+MOVE /65517,[.R1]
+;Quadruple - [MVP T_16, conjuncion, null]
+MOVE /65532, /65515
+;Quadruple - [MV T_17, 10, null]
+MOVE #10,/65514
+;Quadruple - [MV T_18, 20, null]
+MOVE #20,/65513
+;Quadruple - [LS T_19, T_17, T_18]
+CMP /65514,/65513
+BN /L_4
+MOVE #0 ,/65512
+BR /L_5
+L_4: MOVE #1,/65512
+L_5: NOP
+MOVE .A,/65512
+;Quadruple - [AND T_20, T_16, T_19]
+AND /65515,/65512
+MOVE .A,/65511
+;Quadruple - [MVA T_21, resultadoLogico, null]
+MOVE #65533,/65510
+;Quadruple - [STP T_21, T_20, null]
+MOVE /65510,.R1
+MOVE /65511,[.R1]
+;Quadruple - [MVP T_22, conjuncion, null]
+MOVE /65532, /65509
+Quadruple - [BRF T_22, L_2, null]
+;Quadruple - [PRINTC T_23, L_0, null]
+WRSTR /L_0
+WRCHAR #10
+Quadruple - [BR L_3, null, null]
+;Quadruple - [INL L_2, null, null]
+L_2: 
+;Quadruple - [PRINTC T_24, L_1, null]
+WRSTR /L_1
+WRCHAR #10
+;Quadruple - [INL L_3, null, null]
+L_3: 
+;Quadruple - [HALT null, null, null]
+HALT
+;Quadruple - [CADENA "cierto", L_0, null]
+L_0: DATA "cierto"
+;Quadruple - [CADENA "falso", L_1, null]
+L_1: DATA "falso"

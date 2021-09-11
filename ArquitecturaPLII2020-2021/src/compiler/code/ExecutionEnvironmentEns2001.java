@@ -12,6 +12,7 @@ import compiler.semantic.type.TypeSimple;
 import es.uned.lsi.compiler.code.ExecutionEnvironmentIF;
 import es.uned.lsi.compiler.code.MemoryDescriptorIF;
 import es.uned.lsi.compiler.code.RegisterDescriptorIF;
+import es.uned.lsi.compiler.intermediate.LabelFactory;
 import es.uned.lsi.compiler.intermediate.OperandIF;
 import es.uned.lsi.compiler.intermediate.QuadrupleIF;
 
@@ -31,6 +32,7 @@ public class ExecutionEnvironmentEns2001
     
     private RegisterDescriptorIF registerDescriptor;
     private MemoryDescriptorIF   memoryDescriptor;
+    private LabelFactory lf = new LabelFactory();
     
     /**
      * Constructor for ENS2001Environment.
@@ -151,6 +153,37 @@ public class ExecutionEnvironmentEns2001
     		String r = operacion(quadruple.getResult());
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("ADD " + o1 + "," + o2 + "\n");
+    		b.append("MOVE " + ".A" + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("AND")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("AND " + o1 + "," + o2 + "\n");
+    		b.append("MOVE " + ".A" + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("LS")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		Label cierto = (Label) lf.create();
+    		Label falso = (Label) lf.create();
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("CMP " + o1 + "," + o2 + "\n");
+    		b.append("BN /" + cierto + "\n");
+    		b.append("MOVE #0 ," + r + "\n");
+    		b.append("BR /" + falso + "\n");
+    		b.append(cierto + ": MOVE #1," + r + "\n");
+    		b.append(falso + ": NOP" + "\n");
+    		
+
     		b.append("MOVE " + ".A" + "," + r);
     		return b.toString();
     	}
