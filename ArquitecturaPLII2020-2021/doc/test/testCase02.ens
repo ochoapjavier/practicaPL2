@@ -12,4 +12,3 @@ HALT
 L_0: DATA "hola"
 ;Quadruple - [CADENA "mundo", L_1, null]
 L_1: DATA "mundo"
-

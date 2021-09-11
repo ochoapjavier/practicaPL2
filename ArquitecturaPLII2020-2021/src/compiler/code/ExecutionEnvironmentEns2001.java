@@ -129,8 +129,17 @@ public class ExecutionEnvironmentEns2001
     		System.out.println("PRINTC");
     		StringBuffer b = new StringBuffer();
     		String op = operacion(quadruple.getFirstOperand());
+    		System.out.println("primer operando " + op);
     		b.append(";" + quadruple.toString() + "\n");
     		b.append("WRSTR /" + op + "\n");
+    		b.append("WRCHAR #10");
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("PRINTCV")) {
+    		System.out.println("PRINTCV");
+    		StringBuffer b = new StringBuffer();
+    		b.append(";" + quadruple.toString() + "\n");
     		b.append("WRCHAR #10");
     		return b.toString();
     	}

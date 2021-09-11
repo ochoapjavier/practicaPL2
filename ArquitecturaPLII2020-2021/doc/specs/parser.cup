@@ -246,7 +246,6 @@ program ::=
 
 axiom ::= defprincipal:df
 {:	
-	System.out.println("AXIOM..." +df.getIntermediateCode());
 	ScopeIF scope = scopeManager.getCurrentScope();
 	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);                     
 	cb.addQuadruples(df.getIntermediateCode());                  
@@ -281,7 +280,7 @@ defprincipal ::= COMIENZOPROGRAMA IDEN:id
 	//scopeManager.closeScope();
 DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubprograma COMIENZO listaSentencias:ls FINBLOQUESENTENCIAS FINPROGRAMA
 {:	
-	System.out.println("Estoy al final de defprincipal " +ls.getIntermediateCode());
+	System.out.println("Def princiapl");
 	RESULT = ls;
 :};
 
@@ -1165,6 +1164,7 @@ sentencia ::= sentenciadeasignacion:sa
 :}
 | sentenciaEscribir:se
 {:
+	System.out.println("Sentencia...");
 	RESULT = se;
 :}
 | sentenciallamadafuncion;
@@ -1341,9 +1341,11 @@ sentenciaforFuncion ::= COMIENZOBUCLEPARA IDEN:id RANGOBUCLEPARA expresion:exp1 
 // Escribir 
 parametroEscribir ::= STRING:string
 {:
+	System.out.println("Estoy en param Escribir " + string);
 	Expresion exp = new Expresion ();
 	exp.setTipo("cadena");
 	exp.setValor(string.getLexema());
+	System.out.println("exp seteada " + exp.getValor());
 	RESULT = exp;
 	
 :} 
@@ -1352,13 +1354,15 @@ parametroEscribir ::= STRING:string
 	RESULT = exp;
 :}
  | epsilon:ep
- {:
- 	Expresion exp = new Expresion();
-	exp.setTipo("cadena");
- 	RESULT = exp;
+ {:	
+	System.out.println("Estoy en epsilon ");
+	Expresion exp = new Expresion ();
+	exp.setTipo("cadenaV");
+	RESULT = exp;
  :};
 sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO DSENTENCIAS
 {:	
+
 	//Si es cadena
 	if(parametro.getTipo() == "cadena") {
 		Sentencia s = new Sentencia();
@@ -1373,6 +1377,22 @@ sentenciaEscribir ::= ESCRIBIR PIZQUIERDO parametroEscribir:parametro PDERECHO D
 		//Guardamos la cuadrupla de la cadena de caracteres en "listaCadenas" la cual recuperaremos al finalizar el programa principal
 		listaCadenas.add(new Quadruple("CADENA", new Label(texto), lb));
 		s.setIntermediateCode(cb.create());
+		System.out.println("Final escribir");
+		RESULT = s;
+	}
+
+	else if(parametro.getTipo() == "cadenaV") {
+		Sentencia s = new Sentencia();
+		System.out.println("Llego aqui ");
+		ScopeIF scope = scopeManager.getCurrentScope();
+		TemporalFactory tF = new TemporalFactory(scope);
+		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+		TemporalIF temp = tF.create();
+		cb.addQuadruple("PRINTCV", temp);
+		System.out.println("Llego aqui 1 ");
+		//Guardamos la cuadrupla de la cadena de caracteres en "listaCadenas" la cual recuperaremos al finalizar el programa principal
+		s.setIntermediateCode(cb.create());
+		System.out.println("Llego aqui 3");
 		RESULT = s;
 	}
 
