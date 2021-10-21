@@ -1,0 +1,28 @@
+;Quadruple - [VARGLOBAL i, 0, null]
+MOVE #0,/65535
+;Quadruple - [MV i, T_0, null]
+MOVE /65534,/65535
+;Quadruple - [INL L_0, null, null]
+L_0: 
+NOP
+;Quadruple - [MV T_1, 10, null]
+MOVE #10,/65533
+;Quadruple - [CMP T_1, i, null]
+CMP /65533,/65535
+;Quadruple - [BN L_1, null, null]
+BN /L_1
+;Quadruple - [MVP T_2, i, null]
+MOVE /65535, /65532
+;Quadruple - [PRINTE T_2, null, null]
+WRINT /65532
+WRCHAR #10
+;Quadruple - [INC i, null, null]
+INC /65535
+;Quadruple - [BR L_0, null, null]
+BR /L_0
+;Quadruple - [INL L_1, null, null]
+L_1: 
+NOP
+;Quadruple - [HALT null, null, null]
+HALT
+

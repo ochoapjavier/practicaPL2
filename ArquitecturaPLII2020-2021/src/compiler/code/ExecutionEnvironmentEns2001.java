@@ -3,11 +3,17 @@ package compiler.code;
 import java.util.Arrays;
 import java.util.List;
 
+import compiler.intermediate.Label;
+import compiler.intermediate.Temporal;
+import compiler.intermediate.Value;
+import compiler.intermediate.Variable;
 import compiler.semantic.type.TypeSimple;
 
 import es.uned.lsi.compiler.code.ExecutionEnvironmentIF;
 import es.uned.lsi.compiler.code.MemoryDescriptorIF;
 import es.uned.lsi.compiler.code.RegisterDescriptorIF;
+import es.uned.lsi.compiler.intermediate.LabelFactory;
+import es.uned.lsi.compiler.intermediate.OperandIF;
 import es.uned.lsi.compiler.intermediate.QuadrupleIF;
 
 /**
@@ -26,6 +32,7 @@ public class ExecutionEnvironmentEns2001
     
     private RegisterDescriptorIF registerDescriptor;
     private MemoryDescriptorIF   memoryDescriptor;
+    private LabelFactory lf = new LabelFactory();
     
     /**
      * Constructor for ENS2001Environment.
@@ -94,6 +101,258 @@ public class ExecutionEnvironmentEns2001
     public final String translate (QuadrupleIF quadruple)
     {      
         //TODO: Student work
+    	if(quadruple.getOperation().equals("HALT")) {
+    		StringBuffer b = new StringBuffer();
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("HALT");
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("VARGLOBAL")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("PRINTE")) {
+    		StringBuffer b = new StringBuffer();
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("WRINT " + r + "\n");
+    		b.append("WRCHAR #10");
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("PRINTC")) {
+    		StringBuffer b = new StringBuffer();
+    		String op = operacion(quadruple.getFirstOperand());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("WRSTR /" + op + "\n");
+    		b.append("WRCHAR #10");
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("PRINTCV")) {
+    		StringBuffer b = new StringBuffer();
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("WRCHAR #10");
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("ADD")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("ADD " + o1 + "," + o2 + "\n");
+    		b.append("MOVE " + ".A" + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("NOT")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("NOT " + o1 + "\n");
+    		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
+    	
+    	if(quadruple.getOperation().equals("AND")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("AND " + o1 + "," + o2 + "\n");
+    		b.append("MOVE " + ".A" + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("LS")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		Label cierto = (Label) lf.create();
+    		Label falso = (Label) lf.create();
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("SUB " + o1 + "," + o2 + "\n");
+    		b.append("BN /" + cierto + "\n");
+    		b.append("MOVE #1 ," + r + "\n");
+    		b.append("BR /" + falso + "\n");
+    		b.append(cierto + ": MOVE #0," + r + "\n");
+    		b.append(falso + ": NOP" + "\n");
+    		
+
+    		b.append("MOVE " + ".A" + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("MUL")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MUL " + o1 + "," + o2 + "\n");
+    		b.append("MOVE " + ".A" + "," + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("EQ")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String o2 = operacion(quadruple.getSecondOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("CMP " + o1 + "," + o2 + "\n");
+    		b.append("BZ /" + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("BRF")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("CMP " + r + ", #0" + "\n");
+    		b.append("BZ /" + o1);
+    		return b.toString();
+    	}
+    	    	
+    	if(quadruple.getOperation().equals("BR")) {
+    		StringBuffer b = new StringBuffer();
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("BR /" + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("CMP")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("CMP " + r + "," + o1);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("BN")) {
+    		StringBuffer b = new StringBuffer();
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("BN /" + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("INC")) {
+    		StringBuffer b = new StringBuffer();
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("INC " + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("MV")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
+    	
+    	if(quadruple.getOperation().equals("MVA")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacionComp(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + o1 + "," + r);
+    		return b.toString();
+    	}
+    	
+    	//Quadruple - [STP T_1, T_0, null]
+    	if(quadruple.getOperation().equals("STP")) {
+    		StringBuffer b = new StringBuffer();
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + r+ "," + ".R1" + "\n");
+    		b.append("MOVE " + o1 + "," + "[.R1]");
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("MVP")) {
+    		StringBuffer b = new StringBuffer();
+    		//o1 = T_0
+    		String o1 = operacion(quadruple.getFirstOperand());
+    		//r = T_1
+    		String r = operacion(quadruple.getResult());
+    		b.append(";" + quadruple.toString() + "\n");
+    		b.append("MOVE " + o1 + ", " + r);
+    		return b.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("INL")) {
+            StringBuffer buffer = new StringBuffer();
+            String resultado = operacion(quadruple.getResult());
+            buffer.append(";" + quadruple.toString() + "\n");
+            buffer.append(resultado + ": " + "\n");
+            buffer.append("NOP");
+            return buffer.toString();
+    	}
+    	
+    	if(quadruple.getOperation().equals("CADENA")) {
+            StringBuffer buffer = new StringBuffer();
+            String op = operacion(quadruple.getFirstOperand());
+            String r = operacion(quadruple.getResult());
+            buffer.append(";" + quadruple.toString() + "\n");
+            buffer.append(op + ": ");
+            buffer.append("DATA " + r);
+            return buffer.toString();
+          }
+    	
+    	
         return quadruple.toString(); 
+    }
+    
+    public String operacion(OperandIF o) {
+    	if (o instanceof Variable) {
+    		return "/" + ((Variable)o).getAddress();
+    	}
+    	if (o instanceof Value) {
+    		return "#" + ((Value)o).getValue();
+    	}
+    	if (o instanceof Temporal) {
+    		return "/" + ((Temporal)o).getAddress();
+    	}
+    	if (o instanceof Label) {
+    		return  ((Label)o).getName();
+    	}
+    	return null;
+    }
+    
+    public String operacionComp(OperandIF o) {
+    	if (o instanceof Variable) {
+    		return "#" + ((Variable)o).getAddress();
+    	}
+    	if (o instanceof Value) {
+    		return "/" + ((Value)o).getValue();
+    	}
+    	if (o instanceof Temporal) {
+    		return "#" + ((Temporal)o).getAddress();
+    	}
+    	if (o instanceof Label) {
+    		return  ((Label)o).getName();
+    	}
+    	return null;
     }
 }

@@ -13,7 +13,8 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
 
 public class SymbolParameter
     extends SymbolBase
-{  
+{ 
+	private int address;
    
     /**
      * Constructor for SymbolParameter.
@@ -26,5 +27,13 @@ public class SymbolParameter
                            TypeIF type)
     {
         super (scope, name, type);
-    } 
+    }
+
+	public int getAddress() {
+		return address;
+	}
+
+	public void setAddress(int address) {
+		this.address = address;
+	} 
 }

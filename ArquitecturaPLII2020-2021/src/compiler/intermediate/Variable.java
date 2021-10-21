@@ -1,7 +1,12 @@
 package compiler.intermediate;
 
+import java.util.Iterator;
+import java.util.List;
+
+import compiler.semantic.symbol.SymbolVariable;
 import es.uned.lsi.compiler.intermediate.VariableIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
+import es.uned.lsi.compiler.semantic.symbol.SymbolIF;
 
 /**
  * Class for variables in intermediate code.
@@ -12,6 +17,7 @@ public class Variable
 {
     private String  name     = null;
     private ScopeIF scope    = null;
+    private int address;
         
     /**
      * Constructor for Variable.
@@ -25,7 +31,11 @@ public class Variable
         this.scope = scope;
     }
 
-    /**
+    public void setAddress(int address) {
+		this.address = address;
+	}
+
+	/**
      * Returns the name.
      * @return Returns the name.
      */
@@ -53,7 +63,15 @@ public class Variable
     public final int getAddress ()
     {
         // TODO : Student Work
-        return 0;
+    	int address = 0;
+    	List<SymbolIF> simbolos = scope.getSymbolTable().getSymbols();
+    	for (int i = 0; i < simbolos.size(); i++) {
+    		if (simbolos.get(i) instanceof SymbolVariable && simbolos.get(i).getName().equals(this.name)) {
+    			SymbolVariable sv = (SymbolVariable) simbolos.get(i);
+    			address =sv.getAddress();
+			}	
+		}
+    	return address;
     }
 
     /**

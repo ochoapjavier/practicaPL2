@@ -1,5 +1,9 @@
 package compiler.semantic.type;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import compiler.semantic.symbol.SymbolParameter;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 
 /**
@@ -11,7 +15,9 @@ import es.uned.lsi.compiler.semantic.ScopeIF;
 
 public class TypeFunction
     extends TypeProcedure
-{   
+{
+	private List<SymbolParameter> listaParametros;
+	private String retorno;
     
     /**
      * Constructor for TypeFunction.
@@ -20,6 +26,7 @@ public class TypeFunction
     public TypeFunction (ScopeIF scope)
     {
         super (scope);
+        this.listaParametros = new ArrayList<SymbolParameter>();
     }
 
     /**
@@ -30,6 +37,11 @@ public class TypeFunction
     public TypeFunction (ScopeIF scope, String name)
     {
         super (scope, name);
+        this.listaParametros = new ArrayList<SymbolParameter>();
+    }
+    
+    public void addParametro(SymbolParameter parametro) {
+    	this.listaParametros.add(parametro);
     }
     
     /**
@@ -42,4 +54,20 @@ public class TypeFunction
         // TODO: Student work
         return 1;
     }
+
+	public List<SymbolParameter> getListaParametros() {
+		return listaParametros;
+	}
+
+	public void setListaParametros(List<SymbolParameter> listaParametros) {
+		this.listaParametros = listaParametros;
+	}
+
+	public String getRetorno() {
+		return retorno;
+	}
+
+	public void setRetorno(String retorno) {
+		this.retorno = retorno;
+	}
 }
