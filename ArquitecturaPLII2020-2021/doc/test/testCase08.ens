@@ -25,4 +25,3 @@ L_1:
 NOP
 ;Quadruple - [HALT null, null, null]
 HALT
-

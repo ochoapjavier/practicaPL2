@@ -594,24 +594,16 @@ PDERECHO DELIMFUNC seccionconstantes secciontipos seccionvariables seccionsubpro
 
 tiporetornofuncion ::= IDEN:id
 {:	
-	System.out.println("Estoy en tiporetornofuncion " +id);
 	//Var v = new Var(id.getLexema(), id.getLexema());
 	//RESULT = v;
 :} 
 | tipovector:tv
 {:	
-	System.out.println("Estoy en tiporetornofuncion vector" +tv.getType());
 	Var v = new Var();
 	v.setType(tv.getType());
 	RESULT = v;
 :};
 
-/*funcion funcion():entero:
-	  			
-		comienzo
-			devolver 1;
-		fin;
-*/
 funcion ::= DECLAREFUNCION IDEN:id PIZQUIERDO defvariables:lista PDERECHO DELIMFUNC tiporetornofuncion:tipo
 {:
 	ScopeIF scope = scopeManager.getCurrentScope();
@@ -782,7 +774,28 @@ expresion ::=  expresion:exp1 MENORQUE expresion:exp2
 	}		
 :}  
 | llamadafuncion:exp
-{: 
+{: 	
+	//Recuperamos el ámbito en el que nos encontramos
+	ScopeIF scope = scopeManager.getCurrentScope();
+	
+	//Creamos una factoría de temporales con su ámbito
+	TemporalFactory tf = new TemporalFactory(scope);
+	
+	//Instanciamos el constructor del código intermedio con su ámbito
+	IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+	
+	//Creamos un nuevo temporal
+	TemporalIF temp = tf.create();
+	
+	//Creamos la cuadrupla que almacenará en un temporal el valor del entero
+	cb.addQuadruple("MV", temp, 0);
+	
+	//Añadimos el temporal creado al objeto de la clase Expresion
+	exp.setTemporal(temp);
+	
+	//Añadimos el código intermedio generado al objeto de la clase Expresion
+	exp.setIntermediateCode(cb.create());
+
 	RESULT = exp;
 :} 
 | CIERTO
@@ -1138,7 +1151,6 @@ sentenciadeasignacion ::= parteizquierdaasignacion:ref ASIGNACION parametroasign
 
 parametroasignacion ::= expresion:exp
 {:	
-	System.out.println(exp);
 	if (exp.getType() == null && !(scopeManager.containsSymbol(exp.getValor()))){
 		semanticErrorManager.semanticFatalError("El parametro de asignacion " + exp.getValor()+ " no está declarada");
 	} else {

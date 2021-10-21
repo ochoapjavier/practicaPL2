@@ -64,11 +64,11 @@ MOVE #10,/65514
 ;Quadruple - [MV T_18, 20, null]
 MOVE #20,/65513
 ;Quadruple - [LS T_19, T_17, T_18]
-CMP /65514,/65513
+SUB /65514,/65513
 BN /L_4
-MOVE #0 ,/65512
+MOVE #1 ,/65512
 BR /L_5
-L_4: MOVE #1,/65512
+L_4: MOVE #0,/65512
 L_5: NOP
 MOVE .A,/65512
 ;Quadruple - [AND T_20, T_16, T_19]
@@ -91,11 +91,13 @@ WRCHAR #10
 BR /L_3
 ;Quadruple - [INL L_2, null, null]
 L_2: 
+NOP
 ;Quadruple - [PRINTC T_24, L_1, null]
 WRSTR /L_1
 WRCHAR #10
 ;Quadruple - [INL L_3, null, null]
 L_3: 
+NOP
 ;Quadruple - [HALT null, null, null]
 HALT
 ;Quadruple - [CADENA "cierto", L_0, null]

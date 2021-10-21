@@ -18,15 +18,17 @@ MOVE #65533,/65529
 ;Quadruple - [STP T_3, T_2, null]
 MOVE /65529,.R1
 MOVE /65530,[.R1]
-;Quadruple - [MVA T_6, suma, null]
-MOVE #65535,/65526
-;Quadruple - [STP T_6, null, null]
-MOVE /65526,.R1
-MOVE null,[.R1]
-;Quadruple - [MVP T_7, suma, null]
-MOVE /65535, /65525
-;Quadruple - [PRINTE T_7, null, null]
-WRINT /65525
+;Quadruple - [MV T_6, 0, null]
+MOVE #0,/65526
+;Quadruple - [MVA T_7, suma, null]
+MOVE #65535,/65525
+;Quadruple - [STP T_7, T_6, null]
+MOVE /65525,.R1
+MOVE /65526,[.R1]
+;Quadruple - [MVP T_8, suma, null]
+MOVE /65535, /65524
+;Quadruple - [PRINTE T_8, null, null]
+WRINT /65524
 WRCHAR #10
 ;Quadruple - [HALT null, null, null]
 HALT
